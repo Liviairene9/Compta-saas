@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  CLIENT
+}
+
+enum InvoiceStatus {
+  PAID
+  UNPAID
+  OVERDUE
+}
+
+enum QuoteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String?  @unique
+  phone              String   @unique
+  passwordHash       String
+  role               Role     @default(OWNER)
+  mustChangePassword Boolean  @default(false)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  clients      Client[]
+  invoices     Invoice[]
+  quotes       Quote[]
+  resetLogs    PasswordResetLog[] @relation("ResetTarget")
+  resetsDone   PasswordResetLog[] @relation("ResetBy")
+}
+
+model PasswordResetLog {
+  id        String   @id @default(cuid())
+  userId    String
+  resetById String
+  resetAt   DateTime @default(now())
+
+  user      User @relation("ResetTarget", fields: [userId], references: [id])
+  resetBy   User @relation("ResetBy", fields: [resetById], references: [id])
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  ownerId  String
+  owner    User      @relation(fields: [ownerId], references: [id])
+  invoices Invoice[]
+  quotes   Quote[]
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  status      InvoiceStatus @default(UNPAID)
+  totalAmount Float
+  dueDate     DateTime?
+  pdfUrl      String?
+  createdAt   DateTime      @default(now())
+
+  ownerId  String
+  owner    User          @relation(fields: [ownerId], references: [id])
+  clientId String
+  client   Client        @relation(fields: [clientId], references: [id])
+  items    InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Float
+  unitPrice   Float
+  total       Float
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  status      QuoteStatus @default(PENDING)
+  totalAmount Float
+  pdfUrl      String?
+  createdAt   DateTime    @default(now())
+
+  ownerId  String
+  owner    User        @relation(fields: [ownerId], references: [id])
+  clientId String
+  client   Client      @relation(fields: [clientId], references: [id])
+  items    QuoteItem[]
+}
+
+model QuoteItem {
+  id          String @id @default(cuid())
+  description String
+  quantity    Float
+  unitPrice   Float
+  total       Float
+
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id])
+}

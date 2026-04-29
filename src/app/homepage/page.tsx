@@ -49,7 +49,7 @@ export default function homepage () {
        {/* Flex de texte et bouton */}
         <div className="flex-1 flex flex-col space-y-6 text-center lg:text-left items-center lg:items-start">
           <h2 className="text-blue-700 text-4xl lg:text-6xl font-extrabold leading-tight">
-            Gagnez du temps,  simplifier votre comptabilité
+            Gagnez du temps,  simplifiez votre comptabilité
           </h2>
           
           <p className="text-gray-600 text-lg lg:text-xl max-w-xl">
