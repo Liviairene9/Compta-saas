@@ -16,14 +16,19 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/auth", req.url))
   }
 
-  // Protection /admin
-  if (pathname.startsWith("/admin") && role !== "ADMIN") {
+  // CLIENT ne peut pas accéder au dashboard ou admin
+  if (role === "CLIENT" && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
+    return NextResponse.redirect(new URL("/client", req.url))
+  }
+
+  // OWNER ne peut pas accéder à /admin
+  if (role === "OWNER" && pathname.startsWith("/admin")) {
     return NextResponse.redirect(new URL("/dashboard", req.url))
   }
 
-  // Protection /client
-  if (pathname.startsWith("/client") && role !== "CLIENT") {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
+  // ADMIN ne peut pas accéder à /client
+  if (role === "ADMIN" && pathname.startsWith("/client")) {
+    return NextResponse.redirect(new URL("/admin", req.url))
   }
 
   return NextResponse.next()

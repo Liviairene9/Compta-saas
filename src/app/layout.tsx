@@ -17,17 +17,8 @@ export default function RootLayout({
     <html
       lang="en"    >
         <body className="flex flex-col ">
-          <nav className=" flex fixed md:fixed  justify-between items-center p-6  max-w-7xl mx-auto w-full ">
-             <h1 className="text-2xl  font-bold text-blue-700 mr-4">Compta SaaS</h1>
-            <div className=" md:flex space-x-1 flex-1 justify-center items-center gap-8">
-            <Link href="/homepage" className="hover:text-gray-200 font-bold">Home</Link>
-                        <Link href="/#fonctionnalités" className="hover:text-gray-200">Fonctionnalités</Link>
-  <Link href="/pricing" className="hover:text-gray-200 ">Pricing</Link>
-  </div>
-       <Link href="/Login" className="px-2 py-2 bg-blue-700 text-white rounded-xl ml-2" type="submit">Connexion</Link>
-          </nav>
+          {children}
         </body>
-      <main className="min-h-full flex flex-col">{children}</main>
     </html>
   );
 }
