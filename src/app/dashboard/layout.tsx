@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import Sidebar from "@/components/Sidebar"
+import DashboardLayoutClient from "@/app/dashboard/layout-client"
 
 export default async function DashboardLayout({
   children,
@@ -13,9 +13,11 @@ export default async function DashboardLayout({
   if (session.user.mustChangePassword) redirect("/auth/change-password")
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar role={session.user.role} name={session.user.name ?? ""} />
-      <main className="flex-1 p-6">{children}</main>
-    </div>
+    <DashboardLayoutClient
+      role={session.user.role}
+      name={session.user.name ?? ""}
+    >
+      {children}
+    </DashboardLayoutClient>
   )
 }

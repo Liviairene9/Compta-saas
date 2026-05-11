@@ -20,16 +20,15 @@ interface SidebarProps {
 }
 
 const ownerLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/dashboard/clients", label: "Clients", icon: Users },
-  { href: "/dashboard/factures", label: "Factures", icon: FileText },
-  { href: "/dashboard/devis", label: "Devis", icon: FileText },
+  { href: "/dashboard/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/rapports", label: "Rapports", icon: BarChart2 },
   { href: "/dashboard/rappels", label: "Rappels", icon: Bell },
 ]
 
 const adminLinks = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/users", label: "Utilisateurs", icon: Users },
   { href: "/admin/settings", label: "Paramètres", icon: Settings },
 ]
@@ -82,9 +81,9 @@ export default function Sidebar({ role, name }: SidebarProps) {
       <div className="p-4 border-none">
         <button
           onClick={() => signOut({ callbackUrl: "/auth" })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xl font-medium text-slate-600 hover:bg-red-50 hover:text-black w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xl font-medium text-red-600 hover:bg-red-300 hover:text-red-600 w-full"
         >
-          <LogOut size={30} />
+          <LogOut size={30} className="text-red-600" />
           Déconnexion
         </button>
       </div>

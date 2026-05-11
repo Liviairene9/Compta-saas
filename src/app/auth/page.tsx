@@ -68,7 +68,7 @@ export default function AuthForm() {
             )}
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1">Téléphone</label>
+                <label className="text-gray-600 font-semibold mb-1">Numéro de téléphone</label>
                 <input
                   name="phone"
                   type="text"
@@ -111,7 +111,7 @@ export default function AuthForm() {
             )}
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">Nom complet</label>
+                <label className="text-gray-600 font-semibold mb-1 text-sm">Nom de l'entreprise</label>
                 <input name="name" type="text" required className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="Votre nom" />
               </div>
               <div className="flex flex-col">
@@ -119,7 +119,7 @@ export default function AuthForm() {
                 <input name="email" type="email" className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="votre@email.com" />
               </div>
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">Téléphone</label>
+                <label className="text-gray-600 font-semibold mb-1 text-sm">Numéro de téléphone</label>
                 <input name="phone" type="text" required className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="+237 6..." />
               </div>
               <div className="flex flex-col">

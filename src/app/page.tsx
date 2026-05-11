@@ -24,7 +24,7 @@ export default function homepage () {
                                 <Link href="/#fonctionnalités" className="hover:text-gray-200">Fonctionnalités</Link>
           <Link href="/pricing" className="hover:text-gray-200 ">Pricing</Link>
           </div>
-               <Link href="/auth" className="px-2 py-2 bg-blue-700 text-white rounded-xl ml-2" type="submit">Connexion</Link>
+               <Link href="/auth" className="px-4 py-2 bg-blue-700 text-white rounded-xl ml-2 text-lg" type="submit">Connexion</Link>
                   </nav>
         
         <div className="min-h-screen flex  items-center bg-slate-50 ">
