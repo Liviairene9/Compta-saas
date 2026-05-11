@@ -1,37 +1,22 @@
-import { auth } from "@/auth"
+import NextAuth from "next-auth"
+import { authConfig } from "@/app/auth/auth.config"
 import { NextResponse } from "next/server"
+
+// On crée une instance auth spéciale pour le middleware (sans Prisma)
+const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
   const { pathname } = req.nextUrl
   const role = req.auth?.user?.role
   const isLoggedIn = !!req.auth
 
-  // Routes publiques
+  // --- Garde ta logique de redirection actuelle ici ---
+  // (Le code que tu m'as montré avant est parfait)
+  
   if (pathname === "/" || pathname.startsWith("/auth")) {
-    return NextResponse.next()
+     return NextResponse.next()
   }
-
-  // Non connecté → login
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/auth", req.url))
-  }
-
-  // CLIENT ne peut pas accéder au dashboard ou admin
-  if (role === "CLIENT" && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
-    return NextResponse.redirect(new URL("/client", req.url))
-  }
-
-  // OWNER ne peut pas accéder à /admin
-  if (role === "OWNER" && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
-  }
-
-  // ADMIN ne peut pas accéder à /client
-  if (role === "ADMIN" && pathname.startsWith("/client")) {
-    return NextResponse.redirect(new URL("/admin", req.url))
-  }
-
-  return NextResponse.next()
+  // ... reste de tes redirections ...
 })
 
 export const config = {

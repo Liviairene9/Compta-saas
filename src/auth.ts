@@ -2,15 +2,12 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { authConfig } from "@/app/auth/auth.config" 
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: "jwt" },
+  ...authConfig, // On déverse la config de base
   providers: [
     Credentials({
-      credentials: {
-        phone: { label: "Téléphone" },
-        password: { label: "Mot de passe", type: "password" },
-      },
       async authorize(credentials) {
         if (!credentials?.phone || !credentials?.password) return null
 
@@ -20,6 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || !user.isActive) return null
 
+        // Utilise bcryptjs qui est plus léger, mais attention au Edge
         const valid = await bcrypt.compare(
           credentials.password as string,
           user.passwordHash
@@ -48,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.phone = token.phone as string
@@ -56,8 +54,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session
     },
-  },
-  pages: {
-    signIn: "/auth",
   },
 })
