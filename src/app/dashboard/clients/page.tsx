@@ -22,10 +22,6 @@ export default function ClientsPage() {
           Nouveau client
         </button>
       </div>
-      <div className="flex justify-center bg-none rounded-lg gap-3">
-        <Search size={20} />
-     <input className="bg-white rounded-lg gap-3 flex shadow-xl p-6 w-full md:w-1/3" placeholder="Rechercher..." />
-      </div>
       {/* Card stats */}
       <div className="bg-white rounded-2xl shadow-xl p-6 w-full md:w-1/3">
         <div className="flex items-center gap-3">
