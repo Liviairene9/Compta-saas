@@ -13,10 +13,9 @@ export default async function DashboardLayout({
   if (session.user.mustChangePassword) redirect("/auth/change-password")
 
   return (
-    <DashboardLayoutClient
-      role={session.user.role}
-      name={session.user.name ?? ""}
-    >
+    <DashboardLayoutClient   role={session.user.role}
+  name={session.user.name ?? ""}
+>
       {children}
     </DashboardLayoutClient>
   )

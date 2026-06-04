@@ -2,32 +2,60 @@
 
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { z } from "zod"
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Nom trop court"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(5, "Numéro invalide"),
+  password: z
+    .string()
+    .min(8, "Minimum 8 caractères")
+    .regex(/[A-Z]/, "Au moins une majuscule")
+    .regex(/[0-9]/, "Au moins un chiffre")
+    .regex(/[^a-zA-Z0-9]/, "Au moins un caractère spécial"),
+})
 
 export async function registerAction(formData: FormData) {
-  const name = formData.get("name") as string
-  const email = formData.get("email") as string
-  const phone = formData.get("phone") as string
-  const password = formData.get("password") as string
-
-  if (!name || !phone || !password) {
-    return { error: "Champs obligatoires manquants" }
+  const raw = {
+    name: formData.get("name") as string,
+    email: formData.get("email") as string,
+    phone: formData.get("phone") as string,
+    password: formData.get("password") as string,
   }
 
-  const existing = await prisma.user.findUnique({ where: { phone } })
-  if (existing) return { error: "Ce numéro est déjà utilisé" }
+  const result = registerSchema.safeParse(raw)
+  if (!result.success) {
+    return { error: result.error.issues[0].message }
+  }
 
-  const passwordHash = await bcrypt.hash(password, 12)
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { phone: raw.phone },
+    })
+    if (existing) return { error: "Ce numéro est déjà utilisé" }
 
-  await prisma.user.create({
-    data: {
-      id: crypto.randomUUID(),
-      name,
-      email: email || null,
-      phone,
-      passwordHash,
-      role: "OWNER",
-    },
-  })
+    const passwordHash = await bcrypt.hash(raw.password, 12)
 
-  return { success: true }
+    await prisma.$executeRaw`
+      INSERT INTO "User" (id, name, email, phone, "passwordHash", role, "mustChangePassword", "isActive", "createdAt", "updatedAt")
+      VALUES (
+        ${crypto.randomUUID()},
+        ${raw.name},
+        ${raw.email || null},
+        ${raw.phone},
+        ${passwordHash},
+        'OWNER'::"Role",
+        false,
+        true,
+        NOW(),
+        NOW()
+      )
+    `
+
+    return { success: true }
+  } catch (error) {
+    console.error(error)
+    return { error: "Erreur lors de la création du compte" }
+  }
 }

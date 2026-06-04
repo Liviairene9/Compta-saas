@@ -5,12 +5,31 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { redirect } from "next/navigation"
 
-export async function loginAction(formData: FormData) {
-  const phone = formData.get("phone") as string
-  const password = formData.get("password") as string
+function normalizePhone(phone: string): string {
+  const cleaned = phone.replace(/[\s\-]/g, "")
+  
+  if (cleaned.startsWith("+")) return cleaned
+  
+  if (cleaned.startsWith("00")) return "+" + cleaned.slice(2)
+  
+  return cleaned
+}
 
-  // Vérifier les credentials manuellement pour récupérer le rôle
-  const user = await prisma.user.findUnique({ where: { phone } })
+export async function loginAction(formData: FormData) {
+  const rawPhone = formData.get("phone") as string
+  const password = formData.get("password") as string
+  const phone = normalizePhone(rawPhone)
+
+  // Cherche avec le numéro normalisé ET le numéro brut
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { phone: phone },
+        { phone: rawPhone },
+        { phone: rawPhone.replace(/^(\+237|237)/, "") },
+      ],
+    },
+  })
 
   if (!user || !user.isActive) {
     return { error: "Téléphone ou mot de passe incorrect" }
@@ -21,15 +40,12 @@ export async function loginAction(formData: FormData) {
     return { error: "Téléphone ou mot de passe incorrect" }
   }
 
-  // Connecter avec NextAuth
   await signIn("credentials", {
-    phone,
+    phone: user.phone, // utilise le numéro exact en base
     password,
     redirect: false,
   })
 
-  // Rediriger selon le rôle
   if (user.role === "ADMIN") redirect("/admin")
-  if (user.role === "CLIENT") redirect("/client")
   redirect("/dashboard")
 }

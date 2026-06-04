@@ -3,8 +3,15 @@
 import React, { useState } from "react"
 import { loginAction } from "@/app/api/auth/actions"
 import { registerAction } from "@/app/api/auth/registerAction"
+import PhoneInputField from "@/components/PhoneInput"
+import { isValidPhoneNumber } from "react-phone-number-input"
 
 export default function AuthForm() {
+  const [loginPhone, setLoginPhone] = useState("")
+  const [phone, setPhone] = useState("")
+  const [success, setSuccess] = useState(false)
+  const [phoneError, setPhoneError] = useState("")
+  const [loginPhoneError, setLoginPhoneError] = useState("")
   const [isLogin, setIsLogin] = useState(true)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -12,8 +19,16 @@ export default function AuthForm() {
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError("")
+    setLoginPhoneError("")
+
+    if (!loginPhone || !isValidPhoneNumber(loginPhone)) {
+      setLoginPhoneError("Numéro de téléphone invalide")
+      return
+    }
+
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+    formData.set("phone", loginPhone)
     const result = await loginAction(formData)
     if (result?.error) setError(result.error)
     setLoading(false)
@@ -22,13 +37,27 @@ export default function AuthForm() {
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError("")
+    setPhoneError("")
+    setSuccess(false)
+
+    if (!phone || !isValidPhoneNumber(phone)) {
+      setPhoneError("Numéro de téléphone invalide pour ce pays")
+      return
+    }
+
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+    formData.set("phone", phone)
     const result = await registerAction(formData)
     if (result?.error) {
       setError(result.error)
     } else {
-      setIsLogin(true)
+      setSuccess(true)
+      setTimeout(() => {
+        setIsLogin(true)
+        setSuccess(false)
+        setPhone("")
+      }, 2000)
     }
     setLoading(false)
   }
@@ -38,7 +67,7 @@ export default function AuthForm() {
       {/* Onglets */}
       <div className="flex mb-6 bg-white rounded-xl p-1 shadow-md w-full max-w-md">
         <button
-          onClick={() => { setIsLogin(true); setError("") }}
+          onClick={() => { setIsLogin(true); setError(""); setSuccess(false) }}
           className={`flex-1 py-2 rounded-lg font-bold transition-all duration-300 ${
             isLogin ? "bg-blue-700 text-white" : "bg-transparent text-gray-400"
           }`}
@@ -46,7 +75,7 @@ export default function AuthForm() {
           Connexion
         </button>
         <button
-          onClick={() => { setIsLogin(false); setError("") }}
+          onClick={() => { setIsLogin(false); setError(""); setSuccess(false) }}
           className={`flex-1 py-2 rounded-lg font-bold transition-all duration-300 ${
             !isLogin ? "bg-blue-700 text-white" : "bg-transparent text-gray-400"
           }`}
@@ -64,19 +93,14 @@ export default function AuthForm() {
           <div className="w-full flex-shrink-0 p-8 md:p-10 flex flex-col justify-center">
             <h2 className="text-3xl font-extrabold text-blue-900 mb-6 text-center">Connexion</h2>
             {error && isLogin && (
-              <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+              <p className="text-red-500 text-sm text-center mb-4 bg-red-50 p-3 rounded-xl">{error}</p>
             )}
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1">Numéro de téléphone</label>
-                <input
-                  name="phone"
-                  type="text"
-                  required
-                  className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="XXXXXXXXXX"
-                />
-              </div>
+              <PhoneInputField
+                value={loginPhone}
+                onChange={setLoginPhone}
+                error={loginPhoneError}
+              />
               <div className="flex flex-col">
                 <label className="text-gray-600 font-semibold mb-1">Mot de passe</label>
                 <input
@@ -96,7 +120,10 @@ export default function AuthForm() {
               </button>
               <p className="text-center text-sm text-gray-500 mt-4">
                 Pas encore de compte ?{" "}
-                <span onClick={() => { setIsLogin(false); setError("") }} className="text-blue-700 font-bold cursor-pointer hover:underline">
+                <span
+                  onClick={() => { setIsLogin(false); setError("") }}
+                  className="text-blue-700 font-bold cursor-pointer hover:underline"
+                >
                   Inscrivez-vous
                 </span>
               </p>
@@ -107,35 +134,69 @@ export default function AuthForm() {
           <div className="w-full flex-shrink-0 p-8 md:p-10 flex flex-col justify-center">
             <h2 className="text-3xl font-extrabold text-blue-900 mb-6 text-center">Inscription</h2>
             {error && !isLogin && (
-              <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+              <p className="text-red-500 text-sm text-center mb-4 bg-red-50 p-3 rounded-xl">{error}</p>
+            )}
+            {success && (
+              <p className="text-green-600 text-sm text-center mb-4 bg-green-50 p-3 rounded-xl">
+                ✅ Compte créé ! Redirection vers la connexion...
+              </p>
             )}
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">Nom de l'entreprise</label>
-                <input name="name" type="text" required className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="Votre nom" />
+                <label className="text-gray-600 font-semibold mb-1 text-sm">
+                  Nom de l'entreprise *
+                </label>
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  placeholder="Votre nom ou entreprise"
+                />
               </div>
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">E-mail</label>
-                <input name="email" type="email" className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="votre@email.com" />
+                <label className="text-gray-600 font-semibold mb-1 text-sm">E-mail *</label>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  placeholder="votre@email.com"
+                />
               </div>
+              <PhoneInputField
+                value={phone}
+                onChange={setPhone}
+                error={phoneError}
+              />
               <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">Numéro de téléphone</label>
-                <input name="phone" type="text" required className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="+237 6..." />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-semibold mb-1 text-sm">Mot de passe</label>
-                <input name="password" type="password" required className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none text-sm" placeholder="••••••••" />
+                <label className="text-gray-600 font-semibold mb-1 text-sm">
+                  Mot de passe *{" "}
+                  <span className="text-gray-400 font-normal">
+                    (8+ cars, majuscule, chiffre, spécial)
+                  </span>
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  className="bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  placeholder="••••••••"
+                />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-800 text-white font-bold py-3 rounded-xl mt-4 hover:bg-blue-900 transition-colors disabled:opacity-50"
+                className="bg-blue-800 text-white font-bold py-3 rounded-xl mt-2 hover:bg-blue-900 transition-colors disabled:opacity-50"
               >
                 {loading ? "Création..." : "Créer mon compte"}
               </button>
               <p className="text-center text-sm text-gray-500 mt-2">
                 Déjà un compte ?{" "}
-                <span onClick={() => { setIsLogin(true); setError("") }} className="text-blue-700 font-bold cursor-pointer hover:underline">
+                <span
+                  onClick={() => { setIsLogin(true); setError(""); setSuccess(false) }}
+                  className="text-blue-700 font-bold cursor-pointer hover:underline"
+                >
                   Connectez-vous
                 </span>
               </p>

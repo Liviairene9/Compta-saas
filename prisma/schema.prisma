@@ -36,6 +36,16 @@ model User {
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  
+  // Infos professionnelles
+  raisonSociale      String?
+  adresse            String?
+  ville              String?
+  pays               String?  @default("Cameroun")
+  numeroRCCM         String?
+  numeroContribuable String?
+  numeroTVA          String?
+  cgv                String?  // Conditions générales de vente
 
   clients      Client[]
   invoices     Invoice[]

@@ -24,7 +24,7 @@ const ownerLinks = [
   { href: "/dashboard/clients", label: "Clients", icon: Users },
   { href: "/dashboard/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/rapports", label: "Rapports", icon: BarChart2 },
-  { href: "/dashboard/rappels", label: "Rappels", icon: Bell },
+
 ]
 
 const adminLinks = [
@@ -42,10 +42,6 @@ export default function Sidebar({ role, name }: SidebarProps) {
       {/* Logo */}
       <div className="p-6 border-b">
         <h1 className="text-2xl font-bold text-blue-700">Compta SaaS</h1>
-        <p className="text-xl text-blue-900 mt-1">{name}</p>
-        <span className="text-xs bg-blue-500 text-white/90 px-2 py-0.5 rounded-full mt-1 inline-block">
-          {role}
-        </span>
       </div>
 
       {/* Navigation */}
