@@ -109,7 +109,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto"> 
             <table className="w-full text-lg">
               <thead>
                 <tr className="border-b ">
