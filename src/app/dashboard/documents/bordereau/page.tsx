@@ -6,6 +6,8 @@ import { Plus, Trash2, ArrowLeft, Download, ArrowRight } from "lucide-react"
 import { pdf } from "@react-pdf/renderer"
 import { useSession } from "next-auth/react"
 import BordereauPDF from "@/components/pdf/BordereauPDF"
+import { saveBordereauAction } from "./actions"
+
 
 interface LigneArticle {
   id: number
@@ -90,6 +92,14 @@ export default function BordereauPage() {
     a.click()
     URL.revokeObjectURL(url)
     setTelecharge(true)
+await saveBordereauAction({
+  numeroBordereau,
+  clientNom: client.nom,
+  clientAdresse: client.adresse,
+  clientTelephone: client.telephone,
+  totalAmount: sousTotal,
+  livreur: "",}),
+setTelecharge(true)
   }
 
   function documentSuivant() {

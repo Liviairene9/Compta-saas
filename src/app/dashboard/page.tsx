@@ -1,8 +1,9 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { FileText, Users, CheckCircle, XCircle, Plus } from "lucide-react"
+import { FileText, Users, CheckCircle, XCircle, Plus, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import DashboardCharts from "./DashboardCharts"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -15,13 +16,15 @@ export default async function DashboardPage() {
       where: { ownerId },
       include: { client: true },
       orderBy: { createdAt: "desc" },
-      take: 5,
     }),
     prisma.client.count({ where: { ownerId } }),
     prisma.invoice.count({ where: { ownerId } }),
     prisma.invoice.count({ where: { ownerId, status: "PAID" } }),
     prisma.invoice.count({ where: { ownerId, status: "UNPAID" } }),
   ])
+
+  const totalCA = factures.reduce((acc, f) => acc + f.totalAmount, 0)
+  const totalEncaisse = factures.filter(f => f.status === "PAID").reduce((acc, f) => acc + f.totalAmount, 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -43,7 +46,7 @@ export default async function DashboardPage() {
           </Link>
           <Link
             href="/dashboard/clients"
-            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
+            className="hidden sm:flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
           >
             <Plus size={16} />
             Nouveau client
@@ -53,49 +56,52 @@ export default async function DashboardPage() {
 
       {/* Cards stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-5  flex items-center gap-3">
+        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
           <div className="bg-white p-3 rounded-full">
-            <FileText size={20} className="text-blue-700" />
+            <TrendingUp size={20} className="text-blue-700" />
           </div>
-          <div className='flex gap-4 mx-4 my-4'>
-            <p className="text-lg text-gray-500">Total factures</p>
-            <p className="text-2xl font-bold text-blue-700">{totalFactures}</p>
+          <div className="flex mx-4 my-4 gap-2 ml-2">
+            <p className="text-lg text-gray-600">Chiffre d'affaires</p>
+            <p className="text-lg font-bold text-blue-700">{totalCA.toLocaleString("fr-FR")} F</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5  flex items-center gap-3">
-          <div className="bg-white p-3 rounded-xl">
+        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+          <div className="bg-white  p-3 rounded-full">
             <CheckCircle size={20} className="text-green-600" />
           </div>
-          <div className='flex gap-4 mx-4 my-4'>
-            <p className="text-lg text-gray-500">Payées</p>
-            <p className="text-2xl font-bold text-green-600">{facturesPayees}</p>
+          <div className=" flex mx-4 my-4 gap-4 ml-2">
+            <p className="text-lg text-gray-600">Encaissé</p>
+            <p className="text-lg font-bold text-green-600">{totalEncaisse.toLocaleString("fr-FR")} F</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-3">
-          <div className="bg-white p-3 rounded-xl">
+        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+          <div className="bg-white p-3 rounded-full">
             <XCircle size={20} className="text-red-500" />
           </div>
-          <div className='flex gap-4 mx-4 my-4'>
-            <p className="text-lg text-gray-500">Impayées</p>
+          <div className="flex mx-4 my-4 gap-4 ml-2 ">
+            <p className="text-lg text-gray-600">Impayées</p>
             <p className="text-2xl font-bold text-red-500">{facturesImpayes}</p>
-          </div>
+          </div>    
         </div>
-        <div className="bg-white rounded-2xl p-5  flex items-center gap-3">
-          <div className="bg-white p-3 rounded-xl">
+        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+          <div className="bg-white p-3 rounded-full">
             <Users size={20} className="text-purple-600" />
           </div>
-          <div className='flex gap-4 mx-4 my-4'>
-            <p className="text-lg text-gray-500">Clients</p>
+          <div className="flex mx-4 my-4 gap-4 ml-2">
+            <p className="text-lg text-gray-600">Clients</p>
             <p className="text-2xl font-bold text-purple-600">{totalClients}</p>
           </div>
         </div>
       </div>
 
+      {/* Graphiques */}
+      <DashboardCharts factures={factures as any} />
+
       {/* Dernières factures */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-slate-800">Dernières factures</h2>
-          <Link href="/dashboard/documents" className="text-blue-700 text-lg font-semibold hover:underline">
+          <h2 className="font-bold text-gray-800">Dernières factures</h2>
+          <Link href="/dashboard/documents" className="text-blue-700 text-sm font-semibold hover:underline">
             Voir tout →
           </Link>
         </div>
@@ -109,10 +115,10 @@ export default async function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto"> 
-            <table className="w-full text-lg">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b ">
+                <tr className="border-b bg-slate-50">
                   <th className="text-left px-4 py-3 text-gray-500 font-semibold">Numéro</th>
                   <th className="text-left px-4 py-3 text-gray-500 font-semibold">Client</th>
                   <th className="text-left px-4 py-3 text-gray-500 font-semibold">Montant</th>
@@ -121,7 +127,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {factures.map((facture) => (
+                {factures.slice(0, 5).map((facture) => (
                   <tr key={facture.id} className="border-b last:border-0 hover:bg-slate-50 transition">
                     <td className="px-4 py-3 font-semibold text-blue-700">{facture.number}</td>
                     <td className="px-4 py-3 text-gray-700">{facture.client.name}</td>
@@ -130,11 +136,9 @@ export default async function DashboardPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        facture.status === "PAID"
-                          ? "bg-green-100 text-green-600"
-                          : facture.status === "OVERDUE"
-                          ? "bg-red-100 text-red-500"
-                          : "bg-orange-100 text-orange-500"
+                        facture.status === "PAID" ? "bg-green-100 text-green-600" :
+                        facture.status === "OVERDUE" ? "bg-red-100 text-red-500" :
+                        "bg-orange-100 text-orange-500"
                       }`}>
                         {facture.status === "PAID" ? "Payée" : facture.status === "OVERDUE" ? "En retard" : "Impayée"}
                       </span>

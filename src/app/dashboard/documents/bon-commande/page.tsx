@@ -6,6 +6,7 @@ import { Plus, Trash2, ArrowLeft, Download, ArrowRight } from "lucide-react"
 import { pdf } from "@react-pdf/renderer"
 import { useSession } from "next-auth/react"
 import BonCommandePDF from "@/components/pdf/BonCommandePDF"
+import { saveBonCommandeAction } from "./actions"
 
 interface LigneArticle {
   id: number
@@ -99,6 +100,15 @@ export default function BonCommandePage() {
     a.click()
     URL.revokeObjectURL(url)
     setTelecharge(true)
+    await saveBonCommandeAction({
+  numeroBon,
+  clientNom: client.nom,
+  clientAdresse: client.adresse,
+  clientTelephone: client.telephone,
+  totalTTC,
+})
+setTelecharge(true)
+
   }
 
   function documentSuivant() {

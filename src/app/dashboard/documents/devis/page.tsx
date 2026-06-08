@@ -6,6 +6,8 @@ import { Plus, Trash2, ArrowLeft, Download, ArrowRight } from "lucide-react"
 import { pdf } from "@react-pdf/renderer"
 import { useSession } from "next-auth/react"
 import DevisPDF from "@/components/pdf/DevisPDF"
+    import { saveDevisAction } from "./actions"
+
 
 interface LigneArticle {
   id: number
@@ -92,6 +94,16 @@ export default function DevisPage() {
     a.click()
     URL.revokeObjectURL(url)
     setTelecharge(true)
+
+await saveDevisAction({
+  numeroDevis,
+  clientNom: client.nom,
+  clientAdresse: client.adresse,
+  clientTelephone: client.telephone,
+  totalTTC,
+  dateValidite,
+})
+setTelecharge(true)
   }
 
   function documentSuivant() {

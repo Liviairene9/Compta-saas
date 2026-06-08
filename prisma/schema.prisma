@@ -50,6 +50,9 @@ model User {
   clients      Client[]
   invoices     Invoice[]
   quotes       Quote[]
+  devis         Devis[]
+bonsCommande  BonCommande[]
+bordereaux    Bordereau[]
   resetLogs    PasswordResetLog[] @relation("ResetTarget")
   resetsDone   PasswordResetLog[] @relation("ResetBy")
 }
@@ -76,6 +79,9 @@ model Client {
   owner    User      @relation(fields: [ownerId], references: [id])
   invoices Invoice[]
   quotes   Quote[]
+  devis         Devis[]
+bonsCommande  BonCommande[]
+bordereaux    Bordereau[]
 }
 
 model Invoice {
@@ -129,4 +135,42 @@ model QuoteItem {
 
   quoteId String
   quote   Quote  @relation(fields: [quoteId], references: [id])
+}
+model Devis {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  status      QuoteStatus @default(PENDING)
+  totalAmount Float
+  dueDate     DateTime?
+  createdAt   DateTime    @default(now())
+
+  ownerId  String
+  owner    User   @relation(fields: [ownerId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+}
+
+model BonCommande {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  totalAmount Float
+  createdAt   DateTime @default(now())
+
+  ownerId  String
+  owner    User   @relation(fields: [ownerId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+}
+
+model Bordereau {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  totalAmount Float
+  livreur     String?
+  createdAt   DateTime @default(now())
+
+  ownerId  String
+  owner    User   @relation(fields: [ownerId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 }

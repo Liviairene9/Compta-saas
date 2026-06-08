@@ -7,6 +7,7 @@ import { pdf } from "@react-pdf/renderer"
 import FacturePDF from "@/components/pdf/FacturePDF"
 import { useSession } from "next-auth/react"
 import { saveFactureAction } from "./actions"
+import ClientSelector from "@/components/ClientSelector"
 
 interface LigneArticle {
   id: number
@@ -167,6 +168,10 @@ export default function FactureDirectePage() {
         <div>
           <h2 className="text-base font-bold text-gray-800 mb-3">Informations client</h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
+                <ClientSelector
+      onSelect={(c) => setClient({ nom: c.nom, adresse: c.adresse, telephone: c.telephone })}
+    />
+
             <div className="flex flex-col gap-1">
               <label className="text-sm font-semibold text-gray-600">Nom du client *</label>
               <input type="text" required placeholder="Ex: Jean Dupont" value={client.nom}
