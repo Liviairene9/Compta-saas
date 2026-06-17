@@ -12,11 +12,20 @@ export default async function DashboardLayout({
   if (!session) redirect("/auth")
   if (session.user.mustChangePassword) redirect("/auth/change-password")
 
-  return (
-    <DashboardLayoutClient   role={session.user.role}
-  name={session.user.name ?? ""}
->
-      {children}
-    </DashboardLayoutClient>
-  )
+const rappelsCount = await prisma.invoice.count({
+  where: {
+    ownerId: (session as any).user.id,
+    status: { in: ["UNPAID", "OVERDUE"] },
+  },
+})
+
+return (
+  <DashboardLayoutClient
+    role={session.user.role}
+    name={session.user.name ?? ""}
+    rappelsCount={rappelsCount}
+  >
+    {children}
+  </DashboardLayoutClient>
+)
 }

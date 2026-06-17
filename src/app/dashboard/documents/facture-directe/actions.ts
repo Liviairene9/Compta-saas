@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
 
 export async function saveFactureAction(data: {
   numeroFacture: string
@@ -27,12 +28,8 @@ export async function saveFactureAction(data: {
   if (!session) return { error: "Non connecté" }
 
   try {
-    // Chercher ou créer le client
     let client = await prisma.client.findFirst({
-      where: {
-        name: data.clientNom,
-        ownerId: (session as any).user.id,
-      },
+      where: { name: data.clientNom, ownerId: (session as any).user.id },
     })
 
     if (!client) {
@@ -47,12 +44,13 @@ export async function saveFactureAction(data: {
       })
     }
 
-    // Créer la facture
+    const factureId = crypto.randomUUID()
+
     await prisma.$executeRaw`
       INSERT INTO "Invoice" (
         id, number, status, "totalAmount", "dueDate", "createdAt", "ownerId", "clientId"
       ) VALUES (
-        ${crypto.randomUUID()},
+        ${factureId},
         ${data.numeroFacture},
         'UNPAID'::"InvoiceStatus",
         ${data.totalTTC},
@@ -63,9 +61,28 @@ export async function saveFactureAction(data: {
       )
     `
 
-    return { success: true }
+    revalidatePath("/dashboard/documents")
+    revalidatePath("/dashboard")
+    return { success: true, id: factureId }
   } catch (error) {
     console.error(error)
     return { error: "Erreur lors de la sauvegarde" }
+  }
+}
+
+export async function deleteFactureAction(factureId: string) {
+  const session = await auth()
+  if (!session) return { error: "Non connecté" }
+
+  try {
+    await prisma.$executeRaw`
+      DELETE FROM "Invoice"
+      WHERE id = ${factureId} AND "ownerId" = ${(session as any).user.id}
+    `
+    revalidatePath("/dashboard/documents")
+    revalidatePath("/dashboard")
+    return { success: true }
+  } catch (error) {
+    return { error: "Erreur lors de la suppression" }
   }
 }

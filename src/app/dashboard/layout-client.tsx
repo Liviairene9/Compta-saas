@@ -12,9 +12,11 @@ interface Props {
   children: React.ReactNode
   role: string
   name: string
+  rappelsCount: number
+
 }
 
-export default function DashboardLayoutClient({ children, role, name }: Props) {
+export default function DashboardLayoutClient({ children, role, name, rappelsCount }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const pathname = usePathname()
@@ -140,7 +142,7 @@ export default function DashboardLayoutClient({ children, role, name }: Props) {
         </header>
 
         {/* Header mobile */}
-        <HeaderMobile onMenuOpen={() => setIsMenuOpen(true)} />
+        <HeaderMobile onMenuOpen={() => setIsMenuOpen(true)} rappelsCount={rappelsCount} />
 
         <div className="flex-1 overflow-y-auto p-6">
           {children}

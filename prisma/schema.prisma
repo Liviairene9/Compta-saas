@@ -73,6 +73,7 @@ model Client {
   email     String?
   phone     String?
   address   String?
+  ifu String?
   createdAt DateTime @default(now())
 
   ownerId  String
@@ -142,6 +143,10 @@ model Devis {
   status      QuoteStatus @default(PENDING)
   totalAmount Float
   dueDate     DateTime?
+  dateValidite        String?
+  remise              Float?      @default(0)
+  conditionsReglement String?
+  delaisLivraison     String?
   createdAt   DateTime    @default(now())
 
   ownerId  String
@@ -154,6 +159,11 @@ model BonCommande {
   id          String   @id @default(cuid())
   number      String   @unique
   totalAmount Float
+  dateLivraison       String?          
+  adresseLivraison    String?          
+  remise              Float?           @default(0)
+  conditionsReglement String?          
+  modePaiement        String?          
   createdAt   DateTime @default(now())
 
   ownerId  String
@@ -165,10 +175,18 @@ model BonCommande {
 model Bordereau {
   id          String   @id @default(cuid())
   number      String   @unique
-  totalAmount Float
-  livreur     String?
+  dateLivraison       DateTime // Date effective ou prévue de livraison
+  adresseLivraison    String   // Lieu exact de déchargement
+  livreur             String?  // Nom du chauffeur / livreur
+  modeTransport       String   // Ex: "Routier", "Maritime", "Propre compte"
+  immatriculation     String?  // Plaque du véhicule de transport
+  nombreColis         Int      @default(1) // Nombre total de colis
+  
+  // Consignes et indicateur financier logistique
+  conditionsLivraison String?  @db.Text // Instructions ou réserves particulières
+  payeALaLivraison    Boolean  @default(false) // Condition d'encaissement (Contre-remboursement)
   createdAt   DateTime @default(now())
-
+  updatedAt           DateTime @updatedAt
   ownerId  String
   owner    User   @relation(fields: [ownerId], references: [id])
   clientId String
