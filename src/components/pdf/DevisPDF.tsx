@@ -9,12 +9,6 @@ Font.register({
   ],
 })
 
-// SOLUTION RADICALE : On remplace l'espace par un point "." pour le séparateur de milliers.
-// Exemple : 50 000 devient 50.000, ce qui élimine le bug de calcul de largeur de @react-pdf.
-const formatPrix = (prix: number) => {
-  return prix.toLocaleString("fr-FR").replace(/\s/g, ".")
-}
-
 const styles = StyleSheet.create({
   page: { padding: 48, fontSize: 10, fontFamily: "Roboto", color: "#1e293b", backgroundColor: "#ffffff" },
   header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 32, paddingBottom: 24, borderBottomWidth: 2, borderBottomColor: "#1d4ed8" },
@@ -43,7 +37,6 @@ const styles = StyleSheet.create({
   col5: { flex: 1, textAlign: "right" },
   colHeader: { fontWeight: 700, color: "#ffffff", fontSize: 9 },
   
-  // Utilisation sécurisée de la police Helvetica standard pour éviter tout conflit
   montant: { fontFamily: "Helvetica", fontSize: 9 },
   montantHeader: { fontFamily: "Helvetica", fontWeight: 700, color: "#ffffff", fontSize: 9 },
   
@@ -69,6 +62,8 @@ interface LigneArticle {
   quantite: number
   prixUnitaire: number
   total: number
+  prixUnitaireFormate?: string
+  totalFormate?: string
 }
 
 interface Props {
@@ -91,23 +86,23 @@ interface Props {
   }
   lignes: LigneArticle[]
   remise: number
-  montantRemise: number
+  montantRemiseFormate: string
   tva: number
   modePaiement: string
   conditionsReglement: string
   delaisLivraison: string
-  sousTotal: number
-  totalHT: number
-  montantTva: number
-  totalTTC: number
+  sousTotalFormate: string
+  totalHTFormate: string
+  montantTvaFormate: string
+  totalTTCFormate: string
   totalEnLettres: string
 }
 
 export default function DevisPDF({
   numeroDevis, dateDevis, dateValidite, client, vendeur,
-  lignes, remise, montantRemise, tva, modePaiement,
+  lignes, remise, montantRemiseFormate, tva, modePaiement,
   conditionsReglement, delaisLivraison,
-  sousTotal, totalHT, montantTva, totalTTC, totalEnLettres
+  sousTotalFormate, totalHTFormate, montantTvaFormate, totalTTCFormate, totalEnLettres
 }: Props) {
   return (
     <Document>
@@ -182,13 +177,13 @@ export default function DevisPDF({
             <Text style={[styles.col4, styles.montantHeader]}>PU HT</Text>
             <Text style={[styles.col5, styles.montantHeader]}>Total HT</Text>
           </View>
-          {lignes.map((ligne, i) => (
+          {lignes && lignes.map((ligne, i) => (
             <View key={i} style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-              <Text style={styles.col1}>{ligne.designation}</Text>
-              <Text style={styles.col2}>{ligne.categorie}</Text>
-              <Text style={[styles.col3, styles.montant]}>{ligne.quantite}</Text>
-              <Text style={[styles.col4, styles.montant]}>{formatPrix(ligne.prixUnitaire)} FCFA</Text>
-              <Text style={[styles.col5, styles.montant]}>{formatPrix(ligne.total)} FCFA</Text>
+              <Text style={styles.col1}>{ligne.designation || ""}</Text>
+              <Text style={styles.col2}>{ligne.categorie || ""}</Text>
+              <Text style={[styles.col3, styles.montant]}>{ligne.quantite ?? 0}</Text>
+              <Text style={[styles.col4, styles.montant]}>{ligne.prixUnitaireFormate || ligne.prixUnitaire} FCFA</Text>
+              <Text style={[styles.col5, styles.montant]}>{ligne.totalFormate || ligne.total} FCFA</Text>
             </View>
           ))}
         </View>
@@ -197,25 +192,25 @@ export default function DevisPDF({
         <View style={styles.totalsBlock}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Sous-total HT</Text>
-            <Text style={styles.montant}>{formatPrix(sousTotal)} FCFA</Text>
+            <Text style={styles.montant}>{sousTotalFormate} FCFA</Text>
           </View>
-          {remise > 0 && (
+          {remise > 0 ? (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Remise ({remise}%)</Text>
-              <Text style={[styles.montant, { color: "#dc2626" }]}>- {formatPrix(montantRemise)} FCFA</Text>
+              <Text style={[styles.montant, { color: "#dc2626" }]}>- {montantRemiseFormate} FCFA</Text>
             </View>
-          )}
+          ) : null}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total HT</Text>
-            <Text style={styles.montant}>{formatPrix(totalHT)} FCFA</Text>
+            <Text style={styles.montant}>{totalHTFormate} FCFA</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>TVA ({tva}%)</Text>
-            <Text style={styles.montant}>{formatPrix(montantTva)} FCFA</Text>
+            <Text style={styles.montant}>{montantTvaFormate} FCFA</Text>
           </View>
           <View style={styles.totalTTCBlock}>
             <Text style={styles.totalTTCLabel}>Total TTC</Text>
-            <Text style={styles.totalTTCValue}>{formatPrix(totalTTC)} FCFA</Text>
+            <Text style={styles.totalTTCValue}>{totalTTCFormate} FCFA</Text>
           </View>
           <View style={{ marginTop: 6, padding: 8, backgroundColor: "#eff6ff", borderRadius: 4, width: 220 }}>
             <Text style={{ fontSize: 8, color: "#1d4ed8" }}>

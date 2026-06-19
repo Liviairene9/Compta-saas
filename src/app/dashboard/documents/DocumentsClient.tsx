@@ -151,7 +151,7 @@ export default function DocumentsClient({ documents }: { documents: Document[] }
 
                 {/* Montant */}
                 <p className="p-3 text-lg font-bold text-gray-800">
-                  {doc.totalAmount.toLocaleString("fr-FR")} FCFA
+                  {(doc.totalAmount ?? 0).toLocaleString("fr-FR")} FCFA
                 </p>
 
                 {/* Actions */}

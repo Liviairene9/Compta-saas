@@ -3,11 +3,18 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ArrowLeft, Download, ArrowRight, Save, Pencil } from "lucide-react"
-import { pdf, PDFViewer } from "@react-pdf/renderer"
 import { useSession } from "next-auth/react"
 import BordereauLivraisonPDF from "@/components/pdf/BordereauPDF"
 import ClientSelector from "@/components/ClientSelector"
 import { saveBordereauAction, deleteBordereauAction } from "./actions"
+import { pdf } from "@react-pdf/renderer"
+import dynamic from "next/dynamic"
+
+const PDFViewer = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
+  { ssr: false }
+)
+
 
 interface LigneArticle {
   id: number
@@ -94,32 +101,32 @@ export default function BordereauLivraisonPage() {
     if (lignes.length === 1) return
     setLignes((prev) => prev.filter((l) => l.id !== id))
   }
-
   const bordereauProps = {
-    numeroBordereau,
-    dateBordereau,
-    dateLivraison,
-    adresseLivraison,
-    client,
-    vendeur: {
-      nom: session?.user?.name ?? "Mon Entreprise",
-      telephone: session?.user?.phone ?? "",
-      email: session?.user?.email ?? "",
-      raisonSociale: vendeurInfo?.raisonSociale,
-      adresse: vendeurInfo?.adresse,
-      ville: vendeurInfo?.ville,
-      pays: vendeurInfo?.pays,
-      numeroRCCM: vendeurInfo?.numeroRCCM,
-      numeroContribuable: vendeurInfo?.numeroContribuable,
-      numeroTVA: vendeurInfo?.numeroTVA,
-    },
-    lignes,
-    observations,
-  }
+  numeroBordereau,
+  dateBordereau,
+  dateLivraison,
+  adresseLivraison: adresseLivraison || "",
+  client,
+  vendeur: {
+    nom: session?.user?.name ?? "Mon Entreprise",
+    telephone: session?.user?.phone ?? "",
+    email: session?.user?.email ?? "",
+    raisonSociale: vendeurInfo?.raisonSociale ?? "",
+    adresse: vendeurInfo?.adresse ?? "",
+    ville: vendeurInfo?.ville ?? "",
+    pays: vendeurInfo?.pays ?? "",
+    numeroRCCM: vendeurInfo?.numeroRCCM ?? "",
+    numeroContribuable: vendeurInfo?.numeroContribuable ?? "",
+    numeroTVA: vendeurInfo?.numeroTVA ?? "",
+  },
+  lignes,
+  observations: observations || "",
+}
 
   async function enregistrer() {
-    if (!client.nom) { alert("Veuillez renseigner le nom du client"); return }
-    setLoading(true)
+  if (!client.nom) { alert("Veuillez renseigner le nom du client"); return }
+  setLoading(true)
+  try {
     const result = await saveBordereauAction({
       numeroBordereau,
       clientNom: client.nom,
@@ -129,11 +136,21 @@ export default function BordereauLivraisonPage() {
       dateLivraison,
       adresseLivraison,
       observations,
+        lignes, 
+
     })
-    if ((result as any)?.id) setBordereauId((result as any).id)
+    if ((result as any)?.id) {
+      setBordereauId((result as any).id)
+      setEtape("apercu")
+    } else {
+      alert((result as any)?.error || "Erreur lors de la sauvegarde")
+    }
+  } catch (err) {
+    alert("Une erreur est survenue")
+  } finally {
     setLoading(false)
-    setEtape("apercu")
   }
+}
 
   async function telechargerPDF() {
     const blob = await pdf(<BordereauLivraisonPDF {...bordereauProps} />).toBlob()
@@ -192,12 +209,12 @@ export default function BordereauLivraisonPage() {
             </button>
           </div>
         </div>
-        <div className="w-full rounded-2xl overflow-hidden shadow-sm border border-gray-200" style={{ height: "80vh" }}>
-          <PDFViewer width="100%" height="100%" showToolbar={false}>
-            <BordereauLivraisonPDF {...bordereauProps} />
-          </PDFViewer>
-        </div>
-      </div>
+        <div style={{ width: "100%", height: "80vh", borderRadius: "16px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+  <PDFViewer style={{ width: "100%", height: "100%" }} showToolbar={false}>
+    <BordereauLivraisonPDF {...bordereauProps} />
+  </PDFViewer>
+</div>
+    </div>
     )
   }
 

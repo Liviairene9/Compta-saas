@@ -4,40 +4,23 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-interface SaveBordereauInput {
-  id?: string // 👈 Ajouté pour gérer les modifications !
+export async function saveBordereauAction(data: {
   numeroBordereau: string
   clientNom: string
   clientAdresse: string
   clientTelephone: string
   clientIfu?: string
-  dateLivraison: string // Reçu du formulaire sous forme "YYYY-MM-DD"
+  dateLivraison: string
   adresseLivraison: string
-  livreur: string
-  modeTransport: string
-  immatriculation: string
-  nombreColis: number
-  conditionsLivraison: string
-  payeALaLivraison: boolean
-}
-
-export async function saveBordereauAction(data: SaveBordereauInput) {
+  observations: string
+  lignes?: any[]
+}) {
   const session = await auth()
-  if (!session || !(session as any).user?.id) {
-    return { error: "Non connecté" }
-  }
+  if (!session) return { error: "Non connecté" }
 
   const userId = (session as any).user.id
 
-  // ─── VALIDATION DE LA DATE ─────────────────────────────────────────
-  const parsedDate = new Date(data.dateLivraison)
-  if (isNaN(parsedDate.getTime())) {
-    return { error: "La date de livraison est invalide." }
-  }
-  // ───────────────────────────────────────────────────────────────────
-
   try {
-    // 1. Recherche ou création du client
     let client = await prisma.client.findFirst({
       where: { name: data.clientNom, ownerId: userId },
     })
@@ -55,79 +38,115 @@ export async function saveBordereauAction(data: SaveBordereauInput) {
       })
     }
 
-    // 2. Préparation des données communes du Bordereau
-    const bordereauData = {
-      number: data.numeroBordereau,
-      
-      // 💡 CORRECTION DU SOUCI DE DATE :
-      // Si ton schéma Prisma attend un DateTime -> laisse 'parsedDate'
-      // Si ton schéma attend un String -> remplace par 'data.dateLivraison'
-      dateLivraison: parsedDate, 
-      
-      adresseLivraison: data.adresseLivraison,
-      livreur: data.livreur || null,
-      modeTransport: data.modeTransport,
-      immatriculation: data.immatriculation || null,
-      nombreColis: Number(data.nombreColis) || 1,
-      conditionsLivraison: data.conditionsLivraison || null,
-      payeALaLivraison: data.payeALaLivraison,
-      clientId: client.id,
+    const bordereauId = crypto.randomUUID()
+
+    await prisma.$executeRaw`
+      INSERT INTO "Bordereau" (id, number, "totalAmount", "livreur", "createdAt", "ownerId", "clientId")
+      VALUES (
+        ${bordereauId},
+        ${data.numeroBordereau},
+        ${0},
+        ${data.observations || null},
+        ${new Date()},
+        ${userId},
+        ${client.id}
+      )
+    `
+
+    // Sauvegarder les lignes
+    if (data.lignes && data.lignes.length > 0) {
+      for (const ligne of data.lignes) {
+        await prisma.$executeRaw`
+          INSERT INTO "BordereauItem" (id, "bordereauId", designation, categorie, quantite)
+          VALUES (
+            ${crypto.randomUUID()},
+            ${bordereauId},
+            ${ligne.designation || ""},
+            ${ligne.categorie || null},
+            ${ligne.quantite || 0}
+          )
+        `
+      }
     }
 
-    let savedBordereau
+    revalidatePath("/dashboard", "layout")
+    revalidatePath("/dashboard/documents")
+    return { success: true, id: bordereauId }
+  } catch (error: any) {
+    console.error("Erreur saveBordereauAction:", error?.message || error)
+    return { error: `Erreur: ${error?.message || "inconnue"}` }
+  }
+}
+export async function deleteBordereauAction(data: {
+  numeroBordereau: string
+  clientNom: string
+  clientAdresse: string
+  clientTelephone: string
+  clientIfu?: string
+  dateLivraison: string
+  adresseLivraison: string
+  observations: string
+  lignes?: any[]
+}) {
+  const session = await auth()
+  if (!session) return { error: "Non connecté" }
 
-    // 3. Si un ID existe, on MODIFIE, sinon on CRÉE
-    if (data.id) {
-      // Vérification de sécurité pour être sûr que c'est le bon propriétaire
-      const existing = await prisma.bordereau.findFirst({
-        where: { id: data.id, ownerId: userId }
-      })
+  const userId = (session as any).user.id
 
-      if (!existing) return { error: "Bordereau introuvable ou non autorisé." }
+  try {
+    let client = await prisma.client.findFirst({
+      where: { name: data.clientNom, ownerId: userId },
+    })
 
-      savedBordereau = await prisma.bordereau.update({
-        where: { id: data.id },
-        data: bordereauData,
-      })
-    } else {
-      // Création d'un nouveau document
-      savedBordereau = await prisma.bordereau.create({
+    if (!client) {
+      client = await prisma.client.create({
         data: {
-          ...bordereauData,
           id: crypto.randomUUID(),
+          name: data.clientNom,
+          address: data.clientAdresse || null,
+          phone: data.clientTelephone || null,
+          ifu: data.clientIfu || null,
           ownerId: userId,
         },
       })
     }
 
+    const bordereauId = crypto.randomUUID()
+
+    await prisma.$executeRaw`
+      INSERT INTO "Bordereau" (id, number, "totalAmount", "livreur", "createdAt", "ownerId", "clientId")
+      VALUES (
+        ${bordereauId},
+        ${data.numeroBordereau},
+        ${0},
+        ${data.observations || null},
+        ${new Date()},
+        ${userId},
+        ${client.id}
+      )
+    `
+
+    // Sauvegarder les lignes
+    if (data.lignes && data.lignes.length > 0) {
+      for (const ligne of data.lignes) {
+        await prisma.$executeRaw`
+          INSERT INTO "BordereauItem" (id, "bordereauId", designation, categorie, quantite)
+          VALUES (
+            ${crypto.randomUUID()},
+            ${bordereauId},
+            ${ligne.designation || ""},
+            ${ligne.categorie || null},
+            ${ligne.quantite || 0}
+          )
+        `
+      }
+    }
+
+    revalidatePath("/dashboard", "layout")
     revalidatePath("/dashboard/documents")
-    return { success: true, id: savedBordereau.id }
-  } catch (error) {
-    console.error("Erreur saveBordereauAction:", error)
-    return { error: "Erreur lors de la sauvegarde du bordereau" }
-  }
-}
-
-export async function deleteBordereauAction(id: string) {
-  const session = await auth()
-  if (!session || !(session as any).user?.id) {
-    return { error: "Non connecté" }
-  }
-
-  const userId = (session as any).user.id
-
-  try {
-    await prisma.bordereau.deleteMany({
-      where: {
-        id: id,
-        ownerId: userId,
-      },
-    })
-
-    revalidatePath("/dashboard/documents")
-    return { success: true }
-  } catch (error) {
-    console.error("Erreur deleteBordereauAction:", error)
-    return { error: "Erreur lors de la suppression du bordereau" }
+    return { success: true, id: bordereauId }
+  } catch (error: any) {
+    console.error("Erreur saveBordereauAction:", error?.message || error)
+    return { error: `Erreur: ${error?.message || "inconnue"}` }
   }
 }

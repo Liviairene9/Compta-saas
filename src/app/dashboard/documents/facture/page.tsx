@@ -52,13 +52,18 @@ export default function FacturePage() {
   echeance.setMonth(echeance.getMonth() + 1)
   const formatDate = (d: Date) => d.toISOString().split("T")[0]
 
+  // Fonction pour formater avec un point comme séparateur de milliers
+  const formatMontant = (montant: number) => {
+    return Math.floor(montant).toLocaleString("de-DE")
+  }
+
   const [etape, setEtape] = useState<"formulaire" | "apercu">("formulaire")
   const [factureId, setFactureId] = useState<string | null>(null)
   const [client, setClient] = useState({ nom: "", adresse: "", telephone: "" })
   const [numeroFacture] = useState(`FAC-${Date.now().toString().slice(-6)}`)
   const [dateFacture] = useState(formatDate(today))
   const [dateEcheance] = useState(formatDate(echeance))
-  const [tva, setTva] = useState(19.25) // Taux standard par défaut (ex: Cameroun)
+  const [tva, setTva] = useState(19.25) 
   const [modePaiement, setModePaiement] = useState("Virement")
   const [vendeurInfo, setVendeurInfo] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -86,6 +91,7 @@ export default function FacturePage() {
   const totalTTC = sousTotal + montantTva
   const totalEnLettres = convNombreEnLettres(totalTTC)
 
+  // Pré-formatage strict avec des points pour le composant FacturePDF
   const factureProps = {
     numeroFacture,
     dateFacture,
@@ -100,17 +106,22 @@ export default function FacturePage() {
       ville: vendeurInfo?.ville,
       pays: vendeurInfo?.pays,
       numeroRCCM: vendeurInfo?.numeroRCCM,
-      numeroContribuable: vendeurInfo?.numeroContribuable, // NIF Obligatoire
+      numeroContribuable: vendeurInfo?.numeroContribuable, 
       numeroTVA: vendeurInfo?.numeroTVA,
       cgv: vendeurInfo?.cgv,
     },
-    lignes,
+    // On transforme les montants en chaînes déjà formatées avec des points pour le PDF
+    lignes: lignes.map(l => ({
+      ...l,
+      prixUnitaireFormate: `${formatMontant(l.prixUnitaire)}`,
+      totalFormate: `${formatMontant(l.total)}`
+    })),
     tva,
     modePaiement,
-    sousTotal,
-    montantTva,
-    totalTTC,
-    totalEnLettres, // Transmis au composant PDF réutilisable
+    sousTotalFormate: `${formatMontant(sousTotal)}`,
+    montantTvaFormate: `${formatMontant(montantTva)}`,
+    totalTTCFormate: `${formatMontant(totalTTC)}`,
+    totalEnLettres, 
   }
 
   function updateLigne(id: number, field: keyof LigneArticle, value: string | number) {
@@ -175,6 +186,7 @@ export default function FacturePage() {
       a.href = url
       a.download = `${numeroFacture}.pdf`
       a.click()
+      a.remove()
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error("Erreur génération PDF:", error)
@@ -194,7 +206,6 @@ export default function FacturePage() {
     }
   }
 
-  // ===== FORMULAIRE =====
   if (etape === "formulaire") {
     return (
       <div className="flex flex-col gap-6 max-w-4xl mx-auto">
@@ -298,7 +309,7 @@ export default function FacturePage() {
                           className="w-28 border border-gray-200 bg-gray-50 p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                       </td>
                       <td className="px-3 py-2 font-semibold text-gray-800">
-                        {ligne.total.toLocaleString("fr-FR")} FCFA
+                        {formatMontant(ligne.total)} FCFA
                       </td>
                       <td className="px-3 py-2">
                         <button onClick={() => supprimerLigne(ligne.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition">
@@ -343,7 +354,7 @@ export default function FacturePage() {
                   </div>
                   <div className="flex justify-between items-center pt-1 border-t border-gray-200">
                     <span className="text-xs text-gray-500">Total</span>
-                    <span className="font-bold text-blue-700">{ligne.total.toLocaleString("fr-FR")} FCFA</span>
+                    <span className="font-bold text-blue-700">{formatMontant(ligne.total)} FCFA</span>
                   </div>
                 </div>
               ))}
@@ -366,15 +377,15 @@ export default function FacturePage() {
             <div className="bg-slate-50 rounded-xl p-4 w-full md:w-96 flex flex-col gap-2 border border-gray-100">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Net Commercial (HT)</span>
-                <span>{sousTotal.toLocaleString("fr-FR")} FCFA</span>
+                <span className="font-medium text-gray-800">{formatMontant(sousTotal)} FCFA</span>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
                 <span>TVA ({tva}%)</span>
-                <span>{montantTva.toLocaleString("fr-FR")} FCFA</span>
+                <span className="font-medium text-gray-800">{formatMontant(montantTva)} FCFA</span>
               </div>
               <div className="flex justify-between font-bold text-lg text-gray-900 border-t pt-2 mt-1">
                 <span>NET À PAYER (TTC)</span>
-                <span>{totalTTC.toLocaleString("fr-FR")} FCFA</span>
+                <span className="text-blue-700">{formatMontant(totalTTC)} FCFA</span>
               </div>
               <div className="text-[11px] text-gray-500 italic mt-2 border-t pt-2 max-w-xs text-right">
                 Arrêté la présente facture à la somme de : <span className="font-semibold uppercase">{totalEnLettres}</span>
@@ -394,7 +405,7 @@ export default function FacturePage() {
             </select>
           </div>
 
-          {/* Mentions Légales Pied de Page OHADA (Rappel visuel) */}
+          {/* Mentions Légales Pied de Page OHADA */}
           {vendeurInfo && (
             <div className="bg-gray-50 text-[11px] text-gray-400 p-3 rounded-xl border border-dashed border-gray-200">
               <p className="font-semibold text-gray-500 mb-1">Mentions fiscales réglementaires détectées :</p>

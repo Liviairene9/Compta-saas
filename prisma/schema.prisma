@@ -73,7 +73,7 @@ model Client {
   email     String?
   phone     String?
   address   String?
-  ifu String?
+  ifu       String?
   createdAt DateTime @default(now())
 
   ownerId  String
@@ -153,13 +153,14 @@ model Devis {
   owner    User   @relation(fields: [ownerId], references: [id])
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
+  items DevisItem[]
 }
 
 model BonCommande {
   id          String   @id @default(cuid())
   number      String   @unique
   totalAmount Float
-  dateLivraison       String?          
+  dateLivraison       DateTime        
   adresseLivraison    String?          
   remise              Float?           @default(0)
   conditionsReglement String?          
@@ -170,6 +171,7 @@ model BonCommande {
   owner    User   @relation(fields: [ownerId], references: [id])
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
+  items BonCommandeItem[]
 }
 
 model Bordereau {
@@ -191,4 +193,41 @@ model Bordereau {
   owner    User   @relation(fields: [ownerId], references: [id])
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
+  items BordereauItem[]
+}
+model DevisItem {
+  id          String @id @default(cuid())
+  designation String
+  categorie   String?
+  quantite    Float
+  prixUnitaire Float
+  total       Float
+
+  devisId String
+  devis   Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  @@map("DevisItem") 
+}
+
+model BonCommandeItem {
+  id          String @id @default(cuid())
+  designation String
+  categorie   String?
+  quantite    Float
+  prixUnitaire Float
+  total       Float
+
+  bonCommandeId String
+  bonCommande   BonCommande @relation(fields: [bonCommandeId], references: [id], onDelete: Cascade)
+  @@map("BonCommandeItem") 
+}
+
+model BordereauItem {
+  id          String @id @default(cuid())
+  designation String
+  categorie   String?
+  quantite    Float
+
+  bordereauId String
+  bordereau   Bordereau @relation(fields: [bordereauId], references: [id], onDelete: Cascade)
+  @@map("BordereauItem") 
 }

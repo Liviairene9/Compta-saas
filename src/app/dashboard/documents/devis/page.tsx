@@ -60,6 +60,11 @@ export default function DevisPage() {
   validite.setDate(validite.getDate() + 30)
   const formatDate = (d: Date) => d.toISOString().split("T")[0]
 
+  // Fonction pour formater avec un point comme séparateur de milliers
+  const formatMontant = (montant: number) => {
+    return Math.floor(montant).toLocaleString("de-DE")
+  }
+
   const [etape, setEtape] = useState<"formulaire" | "apercu">("formulaire")
   const [devisId, setDevisId] = useState<string | null>(null)
 
@@ -100,7 +105,7 @@ export default function DevisPage() {
   const totalHT = sousTotal - montantRemise
   const montantTva = (totalHT * tva) / 100
   const totalTTC = totalHT + montantTva
-  const totalEnLettres = nombreEnLettres(Math.round(totalTTC)) + " francs CFA"
+  const totalEnLettres = nombreEnLettres(Math.round(totalTTC)).toUpperCase() + " FRANCS CFA"
 
   function updateLigne(id: number, field: keyof LigneArticle, value: string | number) {
     setLignes((prev) =>
@@ -143,22 +148,27 @@ export default function DevisPage() {
       numeroTVA: vendeurInfo?.numeroTVA,
       cgv: vendeurInfo?.cgv,
     },
-    lignes,
+    lignes: lignes.map(l => ({
+      ...l,
+      prixUnitaireFormate: `${formatMontant(l.prixUnitaire)}`,
+      totalFormate: `${formatMontant(l.total)}`
+    })),
     remise,
-    montantRemise,
+    montantRemiseFormate: `${formatMontant(montantRemise)}`,
     tva,
     modePaiement,
     conditionsReglement,
     delaisLivraison,
-    sousTotal,
-    totalHT,
-    montantTva,
-    totalTTC,
+    sousTotalFormate: `${formatMontant(sousTotal)}`,
+    totalHTFormate: `${formatMontant(totalHT)}`,
+    montantTvaFormate: `${formatMontant(montantTva)}`,
+    totalTTCFormate: `${formatMontant(totalTTC)}`,
     totalEnLettres,
   }
 
-  async function enregistrer() {
-    if (!client.nom) { alert("Veuillez renseigner le nom du client"); return }
+async function enregistrer() {
+  if (!client.nom) { alert("Veuillez renseigner le nom du client"); return }
+  try {
     setLoading(true)
     const result = await saveDevisAction({
       numeroDevis,
@@ -166,17 +176,32 @@ export default function DevisPage() {
       clientAdresse: client.adresse,
       clientTelephone: client.telephone,
       clientIfu: client.ifu,
+      lignes,
+      sousTotal,
+      totalHT,
+      montantTva,
       totalTTC,
+      dateDevis,
       dateValidite,
       remise,
+      tva,
+      modePaiement,
       conditionsReglement,
       delaisLivraison,
     })
-    if ((result as any)?.id) setDevisId((result as any).id)
+    if ((result as any)?.id) {
+      setDevisId((result as any).id)
+      setEtape("apercu")
+    } else {
+      alert((result as any)?.error || "Erreur lors de la sauvegarde")
+    }
+  } catch (error) {
+    console.error("Erreur enregistrement devis :", error)
+    alert("Une erreur est survenue durant la sauvegarde.")
+  } finally {
     setLoading(false)
-    setEtape("apercu")
   }
-
+}
   async function telechargerPDF() {
     const blob = await pdf(<DevisPDF {...devisProps} />).toBlob()
     const url = URL.createObjectURL(blob)
@@ -370,7 +395,7 @@ export default function DevisPage() {
                         className="w-28 border border-gray-200 bg-gray-50 p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                     </td>
                     <td className="px-3 py-2 font-semibold text-gray-800">
-                      {ligne.total.toLocaleString("fr-FR")} FCFA
+                      {formatMontant(ligne.total)} FCFA
                     </td>
                     <td className="px-3 py-2">
                       <button onClick={() => supprimerLigne(ligne.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition">
@@ -412,7 +437,7 @@ export default function DevisPage() {
                 </div>
                 <div className="flex justify-between items-center pt-1 border-t border-gray-200">
                   <span className="text-xs text-gray-500">Total HT</span>
-                  <span className="font-bold text-blue-700">{ligne.total.toLocaleString("fr-FR")} FCFA</span>
+                  <span className="font-bold text-blue-700">{formatMontant(ligne.total)} FCFA</span>
                 </div>
               </div>
             ))}
@@ -429,29 +454,29 @@ export default function DevisPage() {
           <div className="bg-slate-50 rounded-xl p-4 w-full md:w-96 flex flex-col gap-3">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Sous-total HT</span>
-              <span>{sousTotal.toLocaleString("fr-FR")} FCFA</span>
+              <span>{formatMontant(sousTotal)} FCFA</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600 flex-1">Remise (%)</span>
               <input type="number" min={0} max={100} value={remise}
                 onChange={(e) => setRemise(Number(e.target.value))}
                 className="w-20 border border-gray-200 bg-white p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right" />
-              <span className="text-sm text-red-500 w-28 text-right">- {montantRemise.toLocaleString("fr-FR")} FCFA</span>
+              <span className="text-sm text-red-500 w-28 text-right">- {formatMontant(montantRemise)} FCFA</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600 border-t pt-2">
               <span>Total HT après remise</span>
-              <span className="font-semibold">{totalHT.toLocaleString("fr-FR")} FCFA</span>
+              <span className="font-semibold">{formatMontant(totalHT)} FCFA</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600 flex-1">TVA (%)</span>
               <input type="number" min={0} max={100} step={0.01} value={tva}
                 onChange={(e) => setTva(Number(e.target.value))}
                 className="w-20 border border-gray-200 bg-white p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right" />
-              <span className="text-sm text-gray-600 w-28 text-right">{montantTva.toLocaleString("fr-FR")} FCFA</span>
+              <span className="text-sm text-gray-600 w-28 text-right">{formatMontant(montantTva)} FCFA</span>
             </div>
             <div className="flex justify-between font-bold text-gray-800 border-t pt-2">
               <span>Total TTC</span>
-              <span>{totalTTC.toLocaleString("fr-FR")} FCFA</span>
+              <span>{formatMontant(totalTTC)} FCFA</span>
             </div>
             <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 italic">
               Arrêté à la somme de : <strong>{totalEnLettres}</strong>

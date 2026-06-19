@@ -184,6 +184,8 @@ export default function BonCommandePage() {
       remise,
       conditionsReglement,
       modePaiement,
+        lignes, 
+
     })
     if ((result as any)?.id) setBonCommandeId((result as any).id)
     setLoading(false)

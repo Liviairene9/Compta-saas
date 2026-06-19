@@ -1,138 +1,17 @@
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-} from "@react-pdf/renderer"
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer"
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontSize: 10,
-    fontFamily: "Helvetica",
-    color: "#1e293b",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: "Helvetica-Bold",
-    color: "#1d4ed8",
-  },
-  subtitle: {
-    fontSize: 10,
-    color: "#64748b",
-    marginTop: 4,
-  },
-  infoBlock: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: "Helvetica-Bold",
-    color: "#1d4ed8",
-    marginBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    paddingBottom: 4,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  label: {
-    color: "#64748b",
-  },
-  value: {
-    fontFamily: "Helvetica-Bold",
-  },
-  table: {
-    marginBottom: 20,
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#eff6ff",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 4,
-  },
-  tableRow: {
-    flexDirection: "row",
-    padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-  },
-  col1: { flex: 3 },
-  col2: { flex: 2 },
-  col3: { flex: 1, textAlign: "right" },
-  col4: { flex: 1, textAlign: "right" },
-  col5: { flex: 1, textAlign: "right" },
-  colHeader: {
-    fontFamily: "Helvetica-Bold",
-    color: "#1d4ed8",
-    fontSize: 9,
-  },
-  totals: {
-    alignItems: "flex-end",
-    marginTop: 10,
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: 200,
-    marginBottom: 4,
-  },
-  totalLine: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: 200,
-    borderTopWidth: 1,
-    borderTopColor: "#1d4ed8",
-    paddingTop: 6,
-    marginTop: 4,
-  },
-  totalLabel: {
-    color: "#64748b",
-  },
-  totalValue: {
-    fontFamily: "Helvetica-Bold",
-  },
-  totalTTCLabel: {
-    fontFamily: "Helvetica-Bold",
-    color: "#1d4ed8",
-    fontSize: 11,
-  },
-  totalTTCValue: {
-    fontFamily: "Helvetica-Bold",
-    color: "#1d4ed8",
-    fontSize: 11,
-  },
-  footer: {
-    marginTop: 40,
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
-    paddingTop: 10,
-    textAlign: "center",
-    color: "#94a3b8",
-    fontSize: 9,
-  },
-})
-
-interface LigneArticle {
-  id: number
+// On définit des interfaces claires pour éviter tout problème d'undefined
+interface LignePDF {
   designation: string
   categorie: string
   quantite: number
-  prixUnitaire: number
-  total: number
+  prixUnitaireFormate?: string // Version corrigée avec les points
+  totalFormate?: string        // Version corrigée avec les points
+  prixUnitaire?: number        // Fallback au cas où
+  total?: number               // Fallback au cas où
 }
 
-interface Props {
+interface FacturePDFProps {
   numeroFacture: string
   dateFacture: string
   dateEcheance: string
@@ -145,18 +24,31 @@ interface Props {
     adresse?: string
     ville?: string
     pays?: string
-    numeroRCCM?: string
-    numeroContribuable?: string
-    numeroTVA?: string
-    cgv?: string
   }
-  lignes: LigneArticle[]
+  lignes: LignePDF[]
   tva: number
   modePaiement: string
-  sousTotal: number
-  montantTva: number
-  totalTTC: number
+  sousTotalFormate: string
+  montantTvaFormate: string
+  totalTTCFormate: string
+  totalEnLettres: string
 }
+
+const styles = StyleSheet.create({
+  page: { padding: 40, fontSize: 11, fontFamily: "Helvetica", color: "#333" },
+  header: { marginBottom: 20, display: "flex", flexDirection: "row", justifyContent: "space-between" },
+  title: { fontSize: 22, fontWeight: "bold", color: "#1d4ed8" },
+  section: { marginBottom: 15 },
+  row: { display: "flex", flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#eee", paddingVertical: 6 },
+  th: { backgroundColor: "#f8fafc", fontWeight: "bold" },
+  cell: { flex: 1, paddingHorizontal: 4 },
+  cellRight: { textAlign: "right" },
+  totauxContainer: { marginTop: 15, alignSelf: "flex-end", width: 200 },
+  totalRow: { display: "flex", flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
+  bold: { fontWeight: "bold" },
+  lettres: { marginTop: 15, fontSize: 9, fontStyle: "italic", color: "#666" }
+})
+
 export default function FacturePDF({
   numeroFacture,
   dateFacture,
@@ -166,93 +58,93 @@ export default function FacturePDF({
   lignes,
   tva,
   modePaiement,
-  sousTotal,
-  montantTva,
-  totalTTC,
-}: Props) {
+  sousTotalFormate,
+  montantTvaFormate,
+  totalTTCFormate,
+  totalEnLettres
+}: FacturePDFProps) {
+  
+  // Fonction de secours locale au cas où une valeur brute non-formatée passerait
+  const safeGetMontant = (formate?: string, brut?: number) => {
+    if (formate) return formate
+    if (brut !== undefined) return Math.floor(brut).toLocaleString("de-DE")
+    return "0"
+  }
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-
-        {/* En-tête */}
+        {/* Entête */}
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>FACTURE</Text>
-            <Text style={styles.subtitle}>N° {numeroFacture}</Text>
+            <Text>N° {numeroFacture}</Text>
           </View>
+          <View style={{ alignItems: "right" }}>
+            <Text style={styles.bold}>{vendeur.raisonSociale || vendeur.nom}</Text>
+            <Text>{vendeur.adresse} {vendeur.ville}</Text>
+            <Text>{vendeur.telephone}</Text>
+          </View>
+        </View>
+
+        {/* Infos Client & Facture */}
+        <View style={[styles.header, { marginTop: 10 }]}>
           <View>
-            <Text style={[styles.value, { textAlign: "right" }]}>{vendeur.nom}</Text>
-            <Text style={[styles.subtitle, { textAlign: "right" }]}>{vendeur.telephone}</Text>
-            <Text style={[styles.subtitle, { textAlign: "right" }]}>{vendeur.email}</Text>
+            <Text style={styles.bold}>Facturé à :</Text>
+            <Text>{client.nom}</Text>
+            <Text>{client.adresse}</Text>
+            <Text>{client.telephone}</Text>
+          </View>
+          <View style={{ alignItems: "right" }}>
+            <Text>Date de facturation : {dateFacture}</Text>
+            <Text>Date d'échéance : {dateEcheance}</Text>
+            <Text>Mode de règlement : {modePaiement}</Text>
           </View>
         </View>
 
-        {/* Dates */}
-        <View style={styles.infoBlock}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Date de facturation :</Text>
-            <Text style={styles.value}>{dateFacture}</Text>
+        {/* Tableau des articles */}
+        <View style={{ marginTop: 20 }}>
+          <View style={[styles.row, styles.th]}>
+            <Text style={[styles.cell, styles.bold]}>Désignation</Text>
+            <Text style={[styles.cell, styles.bold, { textAlign: "center" }]}>Qté</Text>
+            <Text style={[styles.cell, styles.bold, styles.cellRight]}>Prix unitaire</Text>
+            <Text style={[styles.cell, styles.bold, styles.cellRight]}>Total Brut</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Date d'échéance :</Text>
-            <Text style={styles.value}>{dateEcheance}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Mode de paiement :</Text>
-            <Text style={styles.value}>{modePaiement}</Text>
-          </View>
-        </View>
 
-        {/* Informations client */}
-        <View style={styles.infoBlock}>
-          <Text style={styles.sectionTitle}>Facturé à</Text>
-          <Text style={styles.value}>{client.nom}</Text>
-          {client.adresse ? <Text style={styles.label}>{client.adresse}</Text> : null}
-          {client.telephone ? <Text style={styles.label}>{client.telephone}</Text> : null}
-        </View>
-
-        {/* Tableau articles */}
-        <View style={styles.table}>
-          <Text style={styles.sectionTitle}>Articles</Text>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.col1, styles.colHeader]}>Désignation</Text>
-            <Text style={[styles.col2, styles.colHeader]}>Catégorie</Text>
-            <Text style={[styles.col3, styles.colHeader]}>Qté</Text>
-            <Text style={[styles.col4, styles.colHeader]}>Prix unit.</Text>
-            <Text style={[styles.col5, styles.colHeader]}>Total</Text>
-          </View>
-          {lignes.map((ligne, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={styles.col1}>{ligne.designation}</Text>
-              <Text style={styles.col2}>{ligne.categorie}</Text>
-              <Text style={styles.col3}>{ligne.quantite}</Text>
-              <Text style={styles.col4}>{ligne.prixUnitaire.toLocaleString("fr-FR")} FCFA</Text>
-              <Text style={styles.col5}>{ligne.total.toLocaleString("fr-FR")} FCFA</Text>
+          {lignes.map((ligne, index) => (
+            <View key={index} style={styles.row}>
+              <Text style={[styles.cell, { flex: 2 }]}>{ligne.designation || "Article sans nom"}</Text>
+              <Text style={[styles.cell, { textAlign: "center" }]}>{ligne.quantite}</Text>
+              <Text style={[styles.cell, styles.cellRight]}>
+                {safeGetMontant(ligne.prixUnitaireFormate, ligne.prixUnitaire)} FCFA
+              </Text>
+              <Text style={[styles.cell, styles.cellRight]}>
+                {safeGetMontant(ligne.totalFormate, ligne.total)} FCFA
+              </Text>
             </View>
           ))}
         </View>
 
-        {/* Totaux */}
-        <View style={styles.totals}>
+        {/* Bloc Financement Totaux */}
+        <View style={styles.totauxContainer}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Sous-total</Text>
-            <Text style={styles.totalValue}>{sousTotal.toLocaleString("fr-FR")} FCFA</Text>
+            <Text>Net Commercial (HT) :</Text>
+            <Text style={styles.bold}>{sousTotalFormate} FCFA</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>TVA ({tva}%)</Text>
-            <Text style={styles.totalValue}>{montantTva.toLocaleString("fr-FR")} FCFA</Text>
+            <Text>TVA ({tva}%) :</Text>
+            <Text style={styles.bold}>{montantTvaFormate} FCFA</Text>
           </View>
-          <View style={styles.totalLine}>
-            <Text style={styles.totalTTCLabel}>Total TTC</Text>
-            <Text style={styles.totalTTCValue}>{totalTTC.toLocaleString("fr-FR")} FCFA</Text>
+          <View style={[styles.totalRow, { borderTopWidth: 1, borderTopColor: "#333", paddingTop: 4 }]}>
+            <Text style={styles.bold}>NET À PAYER :</Text>
+            <Text style={[styles.bold, { color: "#1d4ed8" }]}>{totalTTCFormate} FCFA</Text>
           </View>
         </View>
 
-        {/* Footer */}
-        <Text style={styles.footer}>
-          Merci pour votre confiance — Compta SaaS
+        {/* Arrêté en lettres */}
+        <Text style={styles.lettres}>
+          Arrêtée la présente facture à la somme de : {totalEnLettres}
         </Text>
-
       </Page>
     </Document>
   )

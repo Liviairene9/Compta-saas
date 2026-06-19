@@ -9,10 +9,12 @@ interface Client {
   phone: string | null
   email: string | null
   address: string | null
+  ifu: string | null  
+
 }
 
 interface Props {
-  onSelect: (client: { nom: string; adresse: string; telephone: string }) => void
+  onSelect: (client: { nom: string; adresse: string; telephone: string; ifu?: string }) => void
 }
 
 export default function ClientSelector({ onSelect }: Props) {
@@ -54,12 +56,13 @@ export default function ClientSelector({ onSelect }: Props) {
       nom: client.name,
       adresse: client.address ?? "",
       telephone: client.phone ?? "",
+      ifu: client.ifu ?? "",
     })
   }
 
   function handleClear() {
     setSelected(null)
-    onSelect({ nom: "", adresse: "", telephone: "" })
+    onSelect({ nom: "", adresse: "", telephone: "", ifu: "" })
   }
 
   return (

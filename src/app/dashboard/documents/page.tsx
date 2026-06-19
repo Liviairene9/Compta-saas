@@ -33,10 +33,10 @@ export default async function DocumentsPage() {
   ])
 
   const documents = [
-    ...factures.map((f) => ({ ...f, type: "FACTURE" as const })),
-    ...devis.map((d) => ({ ...d, type: "DEVIS" as const })),
-    ...bonsCommande.map((b) => ({ ...b, type: "BON_COMMANDE" as const })),
-    ...bordereaux.map((b) => ({ ...b, type: "BORDEREAU" as const })),
+    ...devis.map((d) => ({ ...d, totalAmount: d.totalAmount ?? 0, type: "DEVIS" as const })),
+...bonsCommande.map((b) => ({ ...b, totalAmount: b.totalAmount ?? 0, type: "BON_COMMANDE" as const })),
+...bordereaux.map((b) => ({ ...b, totalAmount: b.totalAmount ?? 0, type: "BORDEREAU" as const })),
+...factures.map((f) => ({ ...f, totalAmount: f.totalAmount ?? 0, type: "FACTURE" as const })),
   ]
 
   return <DocumentsClient documents={documents} />
