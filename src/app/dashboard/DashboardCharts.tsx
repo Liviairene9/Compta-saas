@@ -59,8 +59,7 @@ export default function DashboardCharts({ factures }: { factures: Facture[] }) {
               innerRadius={55}
               outerRadius={80}
               dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              labelLine={false}
+              label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`}              labelLine={false}
             >
               <Cell fill="#16a34a" />
               <Cell fill="#dc2626" />
