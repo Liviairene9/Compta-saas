@@ -80,8 +80,8 @@ export default function FacturePDF({
             <Text style={styles.title}>FACTURE</Text>
             <Text>N° {numeroFacture}</Text>
           </View>
-          <View style={{ alignItems: "right" }}>
-            <Text style={styles.bold}>{vendeur.raisonSociale || vendeur.nom}</Text>
+          <View style={{ alignItems: "flex-end" }}>
+              <Text style={styles.bold}>{vendeur.raisonSociale || vendeur.nom}</Text>
             <Text>{vendeur.adresse} {vendeur.ville}</Text>
             <Text>{vendeur.telephone}</Text>
           </View>
@@ -95,7 +95,7 @@ export default function FacturePDF({
             <Text>{client.adresse}</Text>
             <Text>{client.telephone}</Text>
           </View>
-          <View style={{ alignItems: "right" }}>
+          <View style={{ alignItems: "flex-end" }}>
             <Text>Date de facturation : {dateFacture}</Text>
             <Text>Date d'échéance : {dateEcheance}</Text>
             <Text>Mode de règlement : {modePaiement}</Text>
