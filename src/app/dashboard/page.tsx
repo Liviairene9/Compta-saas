@@ -46,7 +46,7 @@ export default async function DashboardPage() {
           </Link>
           <Link
             href="/dashboard/clients"
-            className="hidden sm:flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
+            className="hidden sm:flex items-center gap-1 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
           >
             <Plus size={16} />
             Nouveau client
@@ -55,8 +55,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Cards stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
           <div className="bg-white p-3 rounded-full">
             <TrendingUp size={20} className="text-blue-700" />
           </div>
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
             <p className="text-lg font-bold text-blue-700">{totalCA.toLocaleString("fr-FR")} F</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
           <div className="bg-white  p-3 rounded-full">
             <CheckCircle size={20} className="text-green-600" />
           </div>
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
             <p className="text-lg font-bold text-green-600">{totalEncaisse.toLocaleString("fr-FR")} F</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
           <div className="bg-white p-3 rounded-full">
             <XCircle size={20} className="text-red-500" />
           </div>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
             <p className="text-2xl font-bold text-red-500">{facturesImpayes}</p>
           </div>    
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-3">
+        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
           <div className="bg-white p-3 rounded-full">
             <Users size={20} className="text-purple-600" />
           </div>

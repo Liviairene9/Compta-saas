@@ -54,32 +54,68 @@ export default function FactureDirectePage() {
   const montantTva = (sousTotal * tva) / 100
   const totalTTC = sousTotal + montantTva
 
-  const factureProps = {
-    numeroFacture,
-    dateFacture,
-    dateEcheance,
-    client,
-    vendeur: {
-      nom: session?.user?.name ?? "Mon Entreprise",
-      telephone: session?.user?.phone ?? "",
-      email: session?.user?.email ?? "",
-      raisonSociale: vendeurInfo?.raisonSociale,
-      adresse: vendeurInfo?.adresse,
-      ville: vendeurInfo?.ville,
-      pays: vendeurInfo?.pays,
-      numeroRCCM: vendeurInfo?.numeroRCCM,
-      numeroContribuable: vendeurInfo?.numeroContribuable,
-      numeroTVA: vendeurInfo?.numeroTVA,
-      cgv: vendeurInfo?.cgv,
-    },
-    lignes,
-    tva,
-    modePaiement,
-    sousTotal,
-    montantTva,
-    totalTTC,
-  }
+const factureProps = {
+  numeroFacture,
+  dateFacture,
+  dateEcheance,
+  client,
+  vendeur: {
+    nom: session?.user?.name ?? "Mon Entreprise",
+    telephone: session?.user?.phone ?? "",
+    email: session?.user?.email ?? "",
+    raisonSociale: vendeurInfo?.raisonSociale,
+    adresse: vendeurInfo?.adresse,
+    ville: vendeurInfo?.ville,
+    pays: vendeurInfo?.pays,
+    numeroRCCM: vendeurInfo?.numeroRCCM,
+    numeroContribuable: vendeurInfo?.numeroContribuable,
+    numeroTVA: vendeurInfo?.numeroTVA,
+    cgv: vendeurInfo?.cgv,
+  },
+  lignes: lignes.map(l => ({
+    ...l,
+    prixUnitaireFormate: Math.floor(l.prixUnitaire).toLocaleString("de-DE"),
+    totalFormate: Math.floor(l.total).toLocaleString("de-DE"),
+  })),
+  tva,
+  modePaiement,
+  sousTotalFormate: Math.floor(sousTotal).toLocaleString("de-DE"),
+  montantTvaFormate: Math.floor(montantTva).toLocaleString("de-DE"),
+  totalTTCFormate: Math.floor(totalTTC).toLocaleString("de-DE"),
+  totalEnLettres: nombreEnLettres(Math.round(totalTTC)).toUpperCase() + " FRANCS CFA",
+}
+function nombreEnLettres(n: number): string {
+  const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
+    "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"]
+  const tens = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingt", "quatre-vingt-dix"]
 
+  if (n === 0) return "zéro"
+  if (n < 0) return "moins " + nombreEnLettres(-n)
+
+  let result = ""
+  if (n >= 1000000) {
+    result += nombreEnLettres(Math.floor(n / 1000000)) + " million "
+    n %= 1000000
+  }
+  if (n >= 1000) {
+    if (Math.floor(n / 1000) === 1) result += "mille "
+    else result += nombreEnLettres(Math.floor(n / 1000)) + " mille "
+    n %= 1000
+  }
+  if (n >= 100) {
+    if (Math.floor(n / 100) === 1) result += "cent "
+    else result += units[Math.floor(n / 100)] + " cent "
+    n %= 100
+  }
+  if (n >= 20) {
+    result += tens[Math.floor(n / 10)]
+    if (n % 10 !== 0) result += "-" + units[n % 10]
+    result += " "
+  } else if (n > 0) {
+    result += units[n] + " "
+  }
+  return result.trim()
+}
   function updateLigne(id: number, field: keyof LigneArticle, value: string | number) {
     setLignes((prev) =>
       prev.map((l) => {

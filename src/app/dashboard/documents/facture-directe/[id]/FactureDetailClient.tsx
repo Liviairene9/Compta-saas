@@ -11,49 +11,58 @@ export default function FactureDetailClient({ facture, vendeur }: { facture: any
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [paid, setPaid] = useState(facture.status === "PAID")
+const lignes = facture.items.map((item: any) => ({
+  id: item.id,
+  designation: item.description,
+  categorie: "",
+  quantite: item.quantity,
+  prixUnitaire: item.unitPrice,
+  total: item.total,
+}))
 
-  const lignes = facture.items.map((item: any) => ({
+const sousTotal = lignes.reduce((acc: number, l: any) => acc + l.total, 0)
+const montantTva = 0
+const totalTTC = facture.totalAmount  // ← utilise le montant enregistré en BD
+
+const factureProps = {
+  numeroFacture: facture.number,
+  dateFacture: new Date(facture.createdAt).toISOString().split("T")[0],
+  dateEcheance: facture.dueDate ? new Date(facture.dueDate).toISOString().split("T")[0] : "",
+  client: {
+    nom: facture.client.name,
+    adresse: facture.client.address ?? "",
+    telephone: facture.client.phone ?? "",
+  },
+  vendeur: {
+    nom: vendeur?.name ?? "",
+    telephone: vendeur?.phone ?? "",
+    email: vendeur?.email ?? "",
+    raisonSociale: vendeur?.raisonSociale,
+    adresse: vendeur?.adresse,
+    ville: vendeur?.ville,
+    pays: vendeur?.pays,
+    numeroRCCM: vendeur?.numeroRCCM,
+    numeroContribuable: vendeur?.numeroContribuable,
+    numeroTVA: vendeur?.numeroTVA,
+    cgv: vendeur?.cgv,
+  },
+  lignes: facture.items.map((item: any) => ({
     id: item.id,
     designation: item.description,
     categorie: "",
     quantite: item.quantity,
     prixUnitaire: item.unitPrice,
     total: item.total,
-  }))
-
-  const sousTotal = lignes.reduce((acc: number, l: any) => acc + l.total, 0)
-  const totalTTC = facture.totalAmount
-
-  const factureProps = {
-    numeroFacture: facture.number,
-    dateFacture: new Date(facture.createdAt).toISOString().split("T")[0],
-    dateEcheance: facture.dueDate ? new Date(facture.dueDate).toISOString().split("T")[0] : "",
-    client: {
-      nom: facture.client.name,
-      adresse: facture.client.address ?? "",
-      telephone: facture.client.phone ?? "",
-    },
-    vendeur: {
-      nom: vendeur?.name ?? "",
-      telephone: vendeur?.phone ?? "",
-      email: vendeur?.email ?? "",
-      raisonSociale: vendeur?.raisonSociale,
-      adresse: vendeur?.adresse,
-      ville: vendeur?.ville,
-      pays: vendeur?.pays,
-      numeroRCCM: vendeur?.numeroRCCM,
-      numeroContribuable: vendeur?.numeroContribuable,
-      numeroTVA: vendeur?.numeroTVA,
-      cgv: vendeur?.cgv,
-    },
-    lignes,
-    tva: 0,
-    modePaiement: "Virement",
-    sousTotal,
-    montantTva: 0,
-    totalTTC,
-  }
-
+    prixUnitaireFormate: Math.floor(item.unitPrice).toLocaleString("de-DE"),
+    totalFormate: Math.floor(item.total).toLocaleString("de-DE"),
+  })),
+  tva: 0,
+  modePaiement: "Virement",
+  sousTotalFormate: Math.floor(facture.totalAmount).toLocaleString("de-DE"),
+  montantTvaFormate: "0",
+  totalTTCFormate: Math.floor(facture.totalAmount).toLocaleString("de-DE"),
+  totalEnLettres: "",
+}
   async function telechargerPDF() {
     setLoading(true)
     const blob = await pdf(<FacturePDF {...factureProps} />).toBlob()

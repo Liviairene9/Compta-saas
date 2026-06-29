@@ -43,9 +43,21 @@ export default function DocumentsClient({ documents }: { documents: Document[] }
   }
 
   function statusBadge(status?: string) {
-    if (status === "PAID") return <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600"><CheckCircle size={11} /> Payée</span>
-    if (status === "OVERDUE") return <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-500"><XCircle size={11} /> En retard</span>
-    if (status === "UNPAID") return <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-500"><Clock size={11} /> Impayée</span>
+    if (status === "PAID") return (
+      <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600">
+        <CheckCircle size={11} /> Payée
+      </span>
+    )
+    if (status === "OVERDUE") return (
+      <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-500">
+        <XCircle size={11} /> En retard
+      </span>
+    )
+    if (status === "UNPAID") return (
+      <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-500">
+        <Clock size={11} /> Impayée
+      </span>
+    )
     return <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-600">Généré</span>
   }
 
@@ -91,6 +103,7 @@ export default function DocumentsClient({ documents }: { documents: Document[] }
         {/* Recherche + filtres */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
+            <Search size={15} className="absolute left-3 top-3.5 text-gray-400" />
             <input
               type="text"
               placeholder="Rechercher par numéro ou client..."
@@ -126,46 +139,44 @@ export default function DocumentsClient({ documents }: { documents: Document[] }
             <p className="text-sm">Aucun document trouvé</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex gap-4 overflow-x-auto pb-3">
             {filtered.map((doc) => (
               <div
                 key={doc.id}
                 onClick={() => handleCardClick(doc)}
-                className="bg-white rounded-2xl shadow-xl p-5 flex flex-col gap-3 border border-gray-100 hover:shadow-md hover:border-blue-200 transition cursor-pointer"
+                className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-gray-100 hover:shadow-md hover:border-blue-200 transition cursor-pointer flex-shrink-0 w-60"
               >
                 {/* Numéro + statut */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-lg">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-lg truncate">
                     {doc.number}
                   </span>
                   {statusBadge(doc.status)}
                 </div>
 
                 {/* Client */}
-                <div className='flex items-center gap-2 p-2'>
-                  <p className="font-semibold text-gray-800 text-sm">{doc.client.name}</p>
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm truncate">{doc.client.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
 
                 {/* Montant */}
-                <p className="p-3 text-lg font-bold text-gray-800">
+                <p className="text-lg font-bold text-gray-800">
                   {(doc.totalAmount ?? 0).toLocaleString("fr-FR")} FCFA
                 </p>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-2 mt-auto">
-                  {doc.type === "FACTURE" && doc.status !== "PAID" && (
-                    <button
-                      onClick={(e) => handleStatusChange(e, doc.id)}
-                      className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-green-50 text-green-600 text-xs font-semibold hover:bg-green-100 transition w-full"
-                    >
-                      <CheckCircle size={13} />
-                      Marquer payée
-                    </button>
-                  )}
-                </div>
+                {/* Bouton marquer payée */}
+                {doc.type === "FACTURE" && doc.status !== "PAID" && (
+                  <button
+                    onClick={(e) => handleStatusChange(e, doc.id)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-green-50 text-green-600 text-xs font-semibold hover:bg-green-100 transition w-full"
+                  >
+                    <CheckCircle size={13} />
+                    Marquer payée
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -192,13 +203,13 @@ export default function DocumentsClient({ documents }: { documents: Document[] }
         <h2 className="text-xl font-bold text-gray-700">Vente indirecte</h2>
         <button
           onClick={() => router.push("/dashboard/documents/devis")}
-          className="bg-green-400 border-4 border-dashed border-green-600 rounded-xl p-10 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 transition w-full"
+          className="bg-white border-4 border-dashed border-green-300 rounded-xl p-10 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 transition w-full"
         >
-          <div className="bg-green-600 p-4 rounded-full">
-            <Plus size={28} className="text-white bg-green-800" />
+          <div className="bg-green-700 p-4 rounded-full">
+            <Plus size={28} className="text-white" />
           </div>
-          <p className="text-slate-700 font-semibold text-xl">Commencer un devis</p>
-          <p className="text-gray-800 text-sm">Devis → Bon de commande → Bordereau → Facture</p>
+          <p className="text-green-700 font-semibold text-xl">Commencer un devis</p>
+          <p className="text-gray-400 text-sm">Devis → Bon de commande → Bordereau → Facture</p>
         </button>
       </div>
     </div>

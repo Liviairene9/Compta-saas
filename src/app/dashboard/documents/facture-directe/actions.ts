@@ -61,15 +61,30 @@ export async function saveFactureAction(data: {
       )
     `
 
+    // Sauvegarder les lignes
+    for (const ligne of data.lignes) {
+      if (!ligne.designation) continue
+      await prisma.$executeRaw`
+        INSERT INTO "InvoiceItem" (id, "invoiceId", description, quantity, "unitPrice", total)
+        VALUES (
+          ${crypto.randomUUID()},
+          ${factureId},
+          ${ligne.designation},
+          ${ligne.quantite},
+          ${ligne.prixUnitaire},
+          ${ligne.total}
+        )
+      `
+    }
+
     revalidatePath("/dashboard/documents")
     revalidatePath("/dashboard")
     return { success: true, id: factureId }
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error("Erreur saveFactureAction:", error?.message || error)
     return { error: "Erreur lors de la sauvegarde" }
   }
 }
-
 export async function deleteFactureAction(factureId: string) {
   const session = await auth()
   if (!session) return { error: "Non connecté" }

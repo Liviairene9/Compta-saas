@@ -8,6 +8,9 @@ import {
 import { TrendingUp, CheckCircle, XCircle, Users, FileText , Download } from "lucide-react"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
+function formatNombre(n: number): string {
+  return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+}
 interface Facture {
   id: string
   number: string
@@ -80,14 +83,14 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
   autoTable(doc, {
     startY: 45,
     head: [["Indicateur", "Valeur"]],
-    body: [
-      ["Chiffre d'affaires total", `${stats.total.toLocaleString("fr-FR")} FCFA`],
-      ["Montant encaissé", `${stats.totalPayees.toLocaleString("fr-FR")} FCFA`],
-      ["Montant à encaisser", `${stats.totalImpayes.toLocaleString("fr-FR")} FCFA`],
-      ["Nombre de factures", `${factures.length}`],
-      ["Factures payées", `${stats.payees}`],
-      ["Factures impayées", `${stats.impayes}`],
-    ],
+body: [
+  ["Chiffre d'affaires total", `${formatNombre(stats.total)} FCFA`],
+  ["Montant encaissé", `${formatNombre(stats.totalPayees)} FCFA`],
+  ["Montant à encaisser", `${formatNombre(stats.totalImpayes)} FCFA`],
+  ["Nombre de factures", `${factures.length}`],
+  ["Factures payées", `${stats.payees}`],
+  ["Factures impayées", `${stats.impayes}`],
+],
     headStyles: { fillColor: [29, 78, 216] },
     alternateRowStyles: { fillColor: [239, 246, 255] },
   })
@@ -101,7 +104,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
   autoTable(doc, {
     startY: finalY + 5,
     head: [["Client", "Montant total"]],
-    body: topClients.map((c) => [c.name, `${c.montant.toLocaleString("fr-FR")} FCFA`]),
+    body: topClients.map((c) => [c.name, `${formatNombre(c.montant)} FCFA`]),
     headStyles: { fillColor: [29, 78, 216] },
     alternateRowStyles: { fillColor: [239, 246, 255] },
   })
@@ -118,7 +121,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
     body: factures.map((f) => [
       f.number,
       f.client.name,
-      `${f.totalAmount.toLocaleString("fr-FR")} FCFA`,
+      `${formatNombre(f.totalAmount)} FCFA`,
       f.status === "PAID" ? "Payée" : f.status === "OVERDUE" ? "En retard" : "Impayée",
       new Date(f.createdAt).toLocaleDateString("fr-FR"),
     ]),
@@ -167,7 +170,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
           </div>
           <div className="flex mx-4 my-4 gap-3 ml-2">
             <p className="text-lg text-gray-600">Chiffre d'affaires</p>
-            <p className="text-lg font-bold text-blue-700">{stats.total.toLocaleString("fr-FR")} F</p>
+            <p className="text-lg font-bold text-blue-700">{formatNombre(stats.total)} F</p>
           </div>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-xl flex items-center gap-2">
@@ -176,7 +179,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
           </div>
           <div className="flex mx-4 my-4 gap-3 ml-2">
             <p className="text-lg text-gray-500">Encaissé</p>
-            <p className="text-lg font-bold text-green-600">{stats.totalPayees.toLocaleString("fr-FR")} F</p>
+            <p className="text-lg font-bold text-green-600">{formatNombre(stats.totalPayees)} F</p>
           </div>
         </div>
         <div className="bg-white rounded-xl  shadow-xl flex items-center gap-3">
@@ -185,7 +188,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
           </div>
           <div className="flex mx-4 my-4 gap-3 ml-2">
             <p className="text-lg text-gray-600">À encaisser</p>
-            <p className="text-lg font-bold text-red-500">{stats.totalImpayes.toLocaleString("fr-FR")} F</p>
+            <p className="text-lg font-bold text-red-500">{formatNombre(stats.totalImpayes)} F</p>
           </div>
         </div>
         <div className="bg-white rounded-xl  shadow-xl flex items-center gap-3">
@@ -216,7 +219,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
                 <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip
-                  formatter={(value: number) => [`${value.toLocaleString("fr-FR")} FCFA`, "Montant"]}
+                  formatter={(value: number) => [`${formatNombre(value)} FCFA`, "Montant"]}
                 />
                 <Bar dataKey="montant" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -275,7 +278,7 @@ export default function RapportsClient({ factures }: { factures: Facture[] }) {
                 <div className="flex-1">
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-semibold text-gray-800">{client.name}</span>
-                    <span className="text-sm font-bold text-blue-700">{client.montant.toLocaleString("fr-FR")} FCFA</span>
+                    <span className="text-sm font-bold text-blue-700">{formatNombre(client.montant)} FCFA</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5">
                     <div
