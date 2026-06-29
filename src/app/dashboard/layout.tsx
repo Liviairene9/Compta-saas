@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import DashboardLayoutClient from "@/app/dashboard/layout-client"
-
+import { prisma } from "@/lib/prisma"
 export default async function DashboardLayout({
   children,
 }: {
