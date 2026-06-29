@@ -165,7 +165,7 @@ export default function BordereauLivraisonPage() {
   async function supprimer() {
     if (!bordereauId) return
     if (!confirm("Supprimer ce bordereau de livraison définitivement ?")) return
-    await deleteBordereauAction(bordereauId)
+    await deleteBordereauAction(bordereauId as any)
     router.push("/dashboard/documents")
   }
 

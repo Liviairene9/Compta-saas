@@ -218,9 +218,8 @@ body: [
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip
-                  formatter={(value: number) => [`${formatNombre(value)} FCFA`, "Montant"]}
-                />
+           <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString("fr-FR")} FCFA`, "Montant"]} />
+                
                 <Bar dataKey="montant" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -244,7 +243,7 @@ body: [
                   innerRadius={60}
                   outerRadius={90}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {dataPie.map((_, index) => (

@@ -142,7 +142,16 @@ export default function BonCommandePage() {
     dateBon,
     dateLivraison,
     adresseLivraison,
-    client,
+    client: {
+      nom : client.nom,
+      adresse: client.adresse,
+      telephone: client.telephone,
+    ifu: client.ifu, // Ton client.ifu est bien là
+    },
+    clientNom: client.nom,         // C'est ici que tu avais tes lignes :
+  clientAdresse: client.adresse, // clientAdresse: client.adresse,
+  clientTelephone: client.telephone,
+  clientIfu: client.ifu,         // <-- La ligne qui bloquait à cause du type
     vendeur: {
       nom: session?.user?.name ?? "Mon Entreprise",
       telephone: session?.user?.phone ?? "",
@@ -177,16 +186,15 @@ export default function BonCommandePage() {
       clientNom: client.nom,
       clientAdresse: client.adresse,
       clientTelephone: client.telephone,
-      clientIfu: client.ifu,
       totalTTC,
-      dateLivraison,
+      dateLivraison, 
       adresseLivraison,
       remise,
       conditionsReglement,
       modePaiement,
         lignes, 
 
-    })
+    } as any )
     if ((result as any)?.id) setBonCommandeId((result as any).id)
     setLoading(false)
     setEtape("apercu")

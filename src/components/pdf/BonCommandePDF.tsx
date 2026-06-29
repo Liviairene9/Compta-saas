@@ -72,7 +72,7 @@ interface LigneArticle {
 interface Props {
   numeroBon: string
   dateBon: string
-  dateLivraison: string
+  dateLivraison?: string
   adresseLivraison?: string
   client: { nom: string; adresse: string; telephone: string; ifu?: string }
   vendeur: {
