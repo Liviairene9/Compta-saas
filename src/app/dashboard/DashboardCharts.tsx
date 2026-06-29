@@ -41,8 +41,7 @@ export default function DashboardCharts({ factures }: { factures: Facture[] }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="mois" tick={{ fontSize: 10 }} />
             <YAxis tick={{ fontSize: 10 }} />
-            <Tooltip formatter={(v: number) => [`${v.toLocaleString("fr-FR")} FCFA`, "Montant"]} />
-            <Bar dataKey="montant" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+<Tooltip formatter={(v: any) => [`${Number(v).toLocaleString("fr-FR")} FCFA`, "Montant"]} />            <Bar dataKey="montant" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -59,7 +58,7 @@ export default function DashboardCharts({ factures }: { factures: Facture[] }) {
               innerRadius={50}
               outerRadius={75}
               dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`}
               labelLine={false}
             >
               <Cell fill="#16a34a" />
