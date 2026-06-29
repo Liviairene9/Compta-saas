@@ -32,34 +32,35 @@ export default function DashboardCharts({ factures }: { factures: Facture[] }) {
   if (factures.length === 0) return null
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Graphique mensuel */}
-      <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="font-bold text-gray-800 mb-4">Chiffre d'affaires mensuel</h2>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={dataMensuelle}>
+      <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <h2 className="font-bold text-gray-800 mb-4 text-sm md:text-base">Chiffre d'affaires mensuel</h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={dataMensuelle} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v: any) => [`${Number(v).toLocaleString("fr-FR")} FCFA`, "Montant"]} />
-            <Bar dataKey="montant" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
+            <XAxis dataKey="mois" tick={{ fontSize: 10 }} />
+            <YAxis tick={{ fontSize: 10 }} />
+            <Tooltip formatter={(v: number) => [`${v.toLocaleString("fr-FR")} FCFA`, "Montant"]} />
+            <Bar dataKey="montant" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Pie chart */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="font-bold text-gray-800 mb-4">Statut des factures</h2>
-        <ResponsiveContainer width="100%" height={220}>
+      <div className="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <h2 className="font-bold text-gray-800 mb-4 text-sm md:text-base">Statut des factures</h2>
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
               data={dataPie}
               cx="50%"
               cy="50%"
-              innerRadius={55}
-              outerRadius={80}
+              innerRadius={50}
+              outerRadius={75}
               dataKey="value"
-              label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`}              labelLine={false}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              labelLine={false}
             >
               <Cell fill="#16a34a" />
               <Cell fill="#dc2626" />

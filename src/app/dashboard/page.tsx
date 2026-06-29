@@ -29,68 +29,62 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Bonjour, {session.user.name} 
+          <h1 className="text-xl font-bold text-gray-800">
+            Bonjour, {session.user.name} 👋
           </h1>
           <p className="text-gray-500 text-sm mt-1">Voici un aperçu de votre activité</p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href="/dashboard/documents/facture-directe"
-            className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-800 transition"
-          >
-            <Plus size={16} />
-            Nouvelle facture
+        <div className="flex gap-2">
+          <Link href="/dashboard/documents/facture-directe"
+            className="flex items-center gap-1 bg-blue-700 text-white px-3 py-2 rounded-xl text-sm font-semibold hover:bg-blue-800 transition">
+            <Plus size={15} /> Nouvelle facture
           </Link>
-          <Link
-            href="/dashboard/clients"
-            className="hidden sm:flex items-center gap-1 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
-          >
-            <Plus size={16} />
-            Nouveau client
+          <Link href="/dashboard/clients"
+            className="hidden sm:flex items-center gap-1 bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition">
+            <Plus size={15} /> Nouveau client
           </Link>
         </div>
       </div>
 
       {/* Cards stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-4">
-        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
-          <div className="bg-white p-3 rounded-full">
-            <TrendingUp size={20} className="text-blue-700" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col gap-1 border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <TrendingUp size={16} className="text-blue-700" />
+            </div>
+            <p className="text-xs text-gray-500">Chiffre d'affaires</p>
           </div>
-          <div className="flex mx-4 my-4 gap-2 ml-2">
-            <p className="text-lg text-gray-600">Chiffre d'affaires</p>
-            <p className="text-lg font-bold text-blue-700">{totalCA.toLocaleString("fr-FR")} F</p>
-          </div>
+          <p className="text-lg font-bold text-blue-700 truncate">{totalCA.toLocaleString("fr-FR")} F</p>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
-          <div className="bg-white  p-3 rounded-full">
-            <CheckCircle size={20} className="text-green-600" />
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col gap-1 border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-green-100 p-2 rounded-lg">
+              <CheckCircle size={16} className="text-green-600" />
+            </div>
+            <p className="text-xs text-gray-500">Encaissé</p>
           </div>
-          <div className=" flex mx-4 my-4 gap-4 ml-2">
-            <p className="text-lg text-gray-600">Encaissé</p>
-            <p className="text-lg font-bold text-green-600">{totalEncaisse.toLocaleString("fr-FR")} F</p>
-          </div>
+          <p className="text-lg font-bold text-green-600 truncate">{totalEncaisse.toLocaleString("fr-FR")} F</p>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
-          <div className="bg-white p-3 rounded-full">
-            <XCircle size={20} className="text-red-500" />
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col gap-1 border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-red-100 p-2 rounded-lg">
+              <XCircle size={16} className="text-red-500" />
+            </div>
+            <p className="text-xs text-gray-500">Impayées</p>
           </div>
-          <div className="flex mx-4 my-4 gap-4 ml-2 ">
-            <p className="text-lg text-gray-600">Impayées</p>
-            <p className="text-2xl font-bold text-red-500">{facturesImpayes}</p>
-          </div>    
+          <p className="text-2xl font-bold text-red-500">{facturesImpayes}</p>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow-xl  flex items-center gap-3">
-          <div className="bg-white p-3 rounded-full">
-            <Users size={20} className="text-purple-600" />
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col gap-1 border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-purple-100 p-2 rounded-lg">
+              <Users size={16} className="text-purple-600" />
+            </div>
+            <p className="text-xs text-gray-500">Clients</p>
           </div>
-          <div className="flex mx-4 my-4 gap-4 ml-2">
-            <p className="text-lg text-gray-600">Clients</p>
-            <p className="text-2xl font-bold text-purple-600">{totalClients}</p>
-          </div>
+          <p className="text-2xl font-bold text-purple-600">{totalClients}</p>
         </div>
       </div>
 
@@ -98,7 +92,7 @@ export default async function DashboardPage() {
       <DashboardCharts factures={factures as any} />
 
       {/* Dernières factures */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-2xl shadow-sm p-4 md:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-gray-800">Dernières factures</h2>
           <Link href="/dashboard/documents" className="text-blue-700 text-sm font-semibold hover:underline">
@@ -119,31 +113,31 @@ export default async function DashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-slate-50">
-                  <th className="text-left px-4 py-3 text-gray-500 font-semibold">Numéro</th>
-                  <th className="text-left px-4 py-3 text-gray-500 font-semibold">Client</th>
-                  <th className="text-left px-4 py-3 text-gray-500 font-semibold">Montant</th>
-                  <th className="text-left px-4 py-3 text-gray-500 font-semibold">Statut</th>
-                  <th className="text-left px-4 py-3 text-gray-500 font-semibold">Date</th>
+                  <th className="text-left px-3 py-3 text-gray-500 font-semibold">Numéro</th>
+                  <th className="text-left px-3 py-3 text-gray-500 font-semibold">Client</th>
+                  <th className="text-left px-3 py-3 text-gray-500 font-semibold hidden sm:table-cell">Montant</th>
+                  <th className="text-left px-3 py-3 text-gray-500 font-semibold">Statut</th>
+                  <th className="text-left px-3 py-3 text-gray-500 font-semibold hidden sm:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {factures.slice(0, 5).map((facture) => (
                   <tr key={facture.id} className="border-b last:border-0 hover:bg-slate-50 transition">
-                    <td className="px-4 py-3 font-semibold text-blue-700">{facture.number}</td>
-                    <td className="px-4 py-3 text-gray-700">{facture.client.name}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">
+                    <td className="px-3 py-3 font-semibold text-blue-700 text-xs">{facture.number}</td>
+                    <td className="px-3 py-3 text-gray-700 text-xs">{facture.client.name}</td>
+                    <td className="px-3 py-3 font-semibold text-gray-800 text-xs hidden sm:table-cell">
                       {facture.totalAmount.toLocaleString("fr-FR")} FCFA
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         facture.status === "PAID" ? "bg-green-100 text-green-600" :
                         facture.status === "OVERDUE" ? "bg-red-100 text-red-500" :
                         "bg-orange-100 text-orange-500"
                       }`}>
-                        {facture.status === "PAID" ? "Payée" : facture.status === "OVERDUE" ? "En retard" : "Impayée"}
+                        {facture.status === "PAID" ? "Payée" : facture.status === "OVERDUE" ? "Retard" : "Impayée"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="px-3 py-3 text-gray-500 text-xs hidden sm:table-cell">
                       {new Date(facture.createdAt).toLocaleDateString("fr-FR")}
                     </td>
                   </tr>
